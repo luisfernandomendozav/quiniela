@@ -42,6 +42,7 @@ async function main() {
       away_score  INTEGER,
       status      TEXT NOT NULL DEFAULT 'pending',
       stage       TEXT,
+      group_name  TEXT,
       venue       TEXT,
       city        TEXT,
       created_at  TIMESTAMPTZ NOT NULL DEFAULT now()
@@ -49,9 +50,10 @@ async function main() {
   `;
 
   // Por si la tabla ya existía sin estas columnas
-  await sql`ALTER TABLE quiniela.matches ADD COLUMN IF NOT EXISTS stage TEXT`;
-  await sql`ALTER TABLE quiniela.matches ADD COLUMN IF NOT EXISTS venue TEXT`;
-  await sql`ALTER TABLE quiniela.matches ADD COLUMN IF NOT EXISTS city  TEXT`;
+  await sql`ALTER TABLE quiniela.matches ADD COLUMN IF NOT EXISTS stage      TEXT`;
+  await sql`ALTER TABLE quiniela.matches ADD COLUMN IF NOT EXISTS group_name TEXT`;
+  await sql`ALTER TABLE quiniela.matches ADD COLUMN IF NOT EXISTS venue      TEXT`;
+  await sql`ALTER TABLE quiniela.matches ADD COLUMN IF NOT EXISTS city       TEXT`;
 
   await sql`
     CREATE TABLE IF NOT EXISTS quiniela.stadiums (

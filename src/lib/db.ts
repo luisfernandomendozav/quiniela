@@ -24,6 +24,7 @@ export type Match = {
   away_score: number | null;
   status: "pending" | "finished";
   stage: string | null;
+  group_name: string | null;
   venue: string | null;
   city: string | null;
 };

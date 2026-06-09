@@ -17,6 +17,7 @@ export type MatchWithPred = {
   away_score: number | null;
   status: string;
   stage: string | null;
+  group_name: string | null;
   venue: string | null;
   city: string | null;
   pred_home: number | null;
@@ -30,12 +31,12 @@ export default async function MatchesPage() {
 
   const matches = (await sql`
     SELECT m.id, m.jornada, m.home_team, m.away_team, m.match_date,
-           m.home_score, m.away_score, m.status, m.stage, m.venue, m.city,
+           m.home_score, m.away_score, m.status, m.stage, m.group_name, m.venue, m.city,
            p.pred_home, p.pred_away, p.points
     FROM quiniela.matches m
     LEFT JOIN quiniela.predictions p
       ON p.match_id = m.id AND p.user_id = ${user.id}
-    ORDER BY m.match_date ASC
+    ORDER BY m.group_name ASC, m.jornada ASC, m.match_date ASC
   `) as MatchWithPred[];
 
   return (
@@ -43,9 +44,9 @@ export default async function MatchesPage() {
       <NavBar user={user} />
       <main className="max-w-4xl mx-auto px-4 py-6">
         <PlayersStrip subtitle="Pronostica al Tri ⚽🇲🇽" />
-        <h1 className="text-xl font-bold mb-1">Partidos · Grupo A 🇲🇽</h1>
+        <h1 className="text-xl font-bold mb-1">Fase de Grupos · Mundial 2026</h1>
         <p className="text-sm text-gray-500 mb-4">
-          Pronostica el marcador de cada partido. ¡Vamos por el Tri!
+          72 partidos en 12 grupos. Pronostica el marcador de cada uno. ¡Vamos por el Tri 🇲🇽!
         </p>
         <MatchList matches={matches} />
       </main>

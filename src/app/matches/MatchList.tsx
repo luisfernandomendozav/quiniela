@@ -3,34 +3,67 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import type { MatchWithPred } from "./page";
-import { flag, isMexico } from "@/lib/teams";
+import { isMexico } from "@/lib/teams";
+import Flag from "@/components/Flag";
 
 export default function MatchList({ matches }: { matches: MatchWithPred[] }) {
   if (matches.length === 0) {
     return <p className="text-gray-500">Aún no hay partidos cargados.</p>;
   }
 
-  // Agrupa por jornada
-  const byJornada = matches.reduce<Record<number, MatchWithPred[]>>((acc, m) => {
-    (acc[m.jornada] ||= []).push(m);
+  // Agrupa por grupo (A-L)
+  const byGroup = matches.reduce<Record<string, MatchWithPred[]>>((acc, m) => {
+    const g = m.group_name ?? "?";
+    (acc[g] ||= []).push(m);
     return acc;
   }, {});
 
   return (
-    <div className="space-y-6">
-      {Object.keys(byJornada)
-        .map(Number)
-        .sort((a, b) => a - b)
-        .map((j) => (
-          <div key={j}>
-            <h2 className="text-sm font-semibold text-gray-500 mb-2">Jornada {j}</h2>
-            <div className="space-y-3">
-              {byJornada[j].map((m) => (
-                <MatchCard key={m.id} match={m} />
-              ))}
-            </div>
-          </div>
-        ))}
+    <div className="space-y-8">
+      {Object.keys(byGroup)
+        .sort()
+        .map((g) => {
+          const games = byGroup[g];
+          const hasMexico = games.some(
+            (m) => isMexico(m.home_team) || isMexico(m.away_team)
+          );
+          // Equipos del grupo (orden de aparición)
+          const teams = Array.from(
+            new Set(games.flatMap((m) => [m.home_team, m.away_team]))
+          );
+          return (
+            <section key={g} id={`grupo-${g}`}>
+              <div
+                className={`flex items-center gap-2 mb-3 pb-2 border-b ${
+                  hasMexico ? "border-brand" : "border-gray-200"
+                }`}
+              >
+                <h2
+                  className={`text-lg font-extrabold ${
+                    hasMexico ? "text-brand" : "text-gray-700"
+                  }`}
+                >
+                  Grupo {g}
+                </h2>
+                {hasMexico && (
+                  <span className="text-[10px] uppercase tracking-wide bg-brand text-white rounded-full px-2 py-0.5">
+                    El Tri 🇲🇽
+                  </span>
+                )}
+                <span className="ml-auto flex items-center gap-1">
+                  {teams.map((t) => (
+                    <Flag key={t} team={t} className="h-3.5 w-5" />
+                  ))}
+                </span>
+              </div>
+              <div className="space-y-3">
+                {games.map((m) => (
+                  <MatchCard key={m.id} match={m} />
+                ))}
+              </div>
+            </section>
+          );
+        })}
     </div>
   );
 }
@@ -70,6 +103,7 @@ function MatchCard({ match }: { match: MatchWithPred }) {
     >
       <div className="flex items-center justify-between text-xs text-gray-400 mb-2">
         <span>
+          <span className="font-semibold text-gray-500 mr-2">J{match.jornada}</span>
           {new Date(match.match_date).toLocaleString("es-MX", {
             weekday: "short",
             day: "2-digit",
@@ -94,8 +128,8 @@ function MatchCard({ match }: { match: MatchWithPred }) {
       </div>
 
       <div className="flex items-center justify-between gap-2">
-        <span className="flex-1 text-right font-medium">
-          {match.home_team} <span className="text-lg">{flag(match.home_team)}</span>
+        <span className="flex-1 text-right font-medium flex items-center justify-end gap-2">
+          {match.home_team} <Flag team={match.home_team} />
         </span>
 
         <div className="flex items-center gap-1">
@@ -118,8 +152,8 @@ function MatchCard({ match }: { match: MatchWithPred }) {
           />
         </div>
 
-        <span className="flex-1 text-left font-medium">
-          <span className="text-lg">{flag(match.away_team)}</span> {match.away_team}
+        <span className="flex-1 text-left font-medium flex items-center gap-2">
+          <Flag team={match.away_team} /> {match.away_team}
         </span>
       </div>
 

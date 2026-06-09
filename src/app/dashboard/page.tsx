@@ -4,7 +4,7 @@ import { getCurrentUser } from "@/lib/auth";
 import { sql } from "@/lib/db";
 import NavBar from "@/components/NavBar";
 import PlayersStrip from "@/components/PlayersStrip";
-import { flag } from "@/lib/teams";
+import Flag from "@/components/Flag";
 
 export const dynamic = "force-dynamic";
 
@@ -59,8 +59,9 @@ export default async function Dashboard() {
         {nextMx[0] && (
           <div className="mb-6 rounded-xl p-4 text-white bg-gradient-to-r from-brand to-brand-light shadow">
             <div className="text-xs uppercase tracking-wide opacity-80">Próximo partido de México 🇲🇽</div>
-            <div className="text-lg font-bold mt-1">
-              {flag(nextMx[0].home_team)} {nextMx[0].home_team} vs {nextMx[0].away_team} {flag(nextMx[0].away_team)}
+            <div className="text-lg font-bold mt-1 flex items-center gap-2">
+              <Flag team={nextMx[0].home_team} /> {nextMx[0].home_team} vs {nextMx[0].away_team}{" "}
+              <Flag team={nextMx[0].away_team} />
             </div>
             <div className="text-sm opacity-90 mt-1">
               {new Date(nextMx[0].match_date).toLocaleString("es-MX", {
@@ -90,9 +91,10 @@ export default async function Dashboard() {
             <ul className="divide-y">
               {upcoming.map((m) => (
                 <li key={m.id} className="py-2 flex items-center justify-between text-sm">
-                  <span>
-                    <span className="text-gray-400 mr-2">J{m.jornada}</span>
-                    {flag(m.home_team)} {m.home_team} vs {m.away_team} {flag(m.away_team)}
+                  <span className="flex items-center gap-1.5">
+                    <span className="text-gray-400 mr-1">J{m.jornada}</span>
+                    <Flag team={m.home_team} className="h-3.5 w-5" /> {m.home_team} vs {m.away_team}{" "}
+                    <Flag team={m.away_team} className="h-3.5 w-5" />
                   </span>
                   <span className="text-gray-500">
                     {new Date(m.match_date).toLocaleString("es-MX", {
