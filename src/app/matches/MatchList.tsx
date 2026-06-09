@@ -6,20 +6,68 @@ import type { MatchWithPred } from "./page";
 import { isMexico } from "@/lib/teams";
 import Flag from "@/components/Flag";
 
-export default function MatchList({ matches }: { matches: MatchWithPred[] }) {
+export default function MatchList({
+  matches,
+  activeJornada,
+}: {
+  matches: MatchWithPred[];
+  activeJornada: number;
+}) {
+  // Jornadas disponibles (1, 2, 3...) y filtro seleccionado (por defecto la activa)
+  const jornadas = Array.from(new Set(matches.map((m) => m.jornada))).sort((a, b) => a - b);
+  const [filter, setFilter] = useState<number | "all">(activeJornada);
+
   if (matches.length === 0) {
     return <p className="text-gray-500">Aún no hay partidos cargados.</p>;
   }
 
+  const visible = filter === "all" ? matches : matches.filter((m) => m.jornada === filter);
+
   // Agrupa por grupo (A-L)
-  const byGroup = matches.reduce<Record<string, MatchWithPred[]>>((acc, m) => {
+  const byGroup = visible.reduce<Record<string, MatchWithPred[]>>((acc, m) => {
     const g = m.group_name ?? "?";
     (acc[g] ||= []).push(m);
     return acc;
   }, {});
 
+  const tab = (value: number | "all", label: string) => {
+    const isActive = value === activeJornada;
+    const selected = filter === value;
+    return (
+      <button
+        key={String(value)}
+        onClick={() => setFilter(value)}
+        className={`relative px-3 py-1.5 rounded-full text-sm font-medium border transition ${
+          selected
+            ? "bg-brand text-white border-brand"
+            : "bg-white text-gray-600 border-gray-200 hover:border-brand"
+        }`}
+      >
+        {label}
+        {isActive && (
+          <span
+            className="absolute -top-1 -right-1 w-2.5 h-2.5 rounded-full bg-mxred ring-2 ring-white"
+            title="Jornada activa"
+          />
+        )}
+      </button>
+    );
+  };
+
   return (
-    <div className="space-y-8">
+    <>
+      <div className="flex flex-wrap items-center gap-2 mb-6">
+        {tab("all", "Todas")}
+        {jornadas.map((j) => tab(j, `Jornada ${j}`))}
+        <span className="ml-auto text-xs text-gray-400 flex items-center gap-1">
+          <span className="w-2.5 h-2.5 rounded-full bg-mxred inline-block" /> jornada activa
+        </span>
+      </div>
+
+      <div className="space-y-8">
+      {Object.keys(byGroup).length === 0 && (
+        <p className="text-gray-500">No hay partidos en esta jornada.</p>
+      )}
       {Object.keys(byGroup)
         .sort()
         .map((g) => {
@@ -58,19 +106,28 @@ export default function MatchList({ matches }: { matches: MatchWithPred[] }) {
               </div>
               <div className="space-y-3">
                 {games.map((m) => (
-                  <MatchCard key={m.id} match={m} />
+                  <MatchCard key={m.id} match={m} activeJornada={activeJornada} />
                 ))}
               </div>
             </section>
           );
         })}
-    </div>
+      </div>
+    </>
   );
 }
 
-function MatchCard({ match }: { match: MatchWithPred }) {
+function MatchCard({
+  match,
+  activeJornada,
+}: {
+  match: MatchWithPred;
+  activeJornada: number;
+}) {
   const router = useRouter();
-  const closed = match.status === "finished" || new Date(match.match_date) <= new Date();
+  const jornadaOpen = match.jornada === activeJornada;
+  const started = match.status === "finished" || new Date(match.match_date) <= new Date();
+  const closed = !jornadaOpen || started;
   const [home, setHome] = useState(match.pred_home?.toString() ?? "");
   const [away, setAway] = useState(match.pred_away?.toString() ?? "");
   const [saving, setSaving] = useState(false);
@@ -124,7 +181,15 @@ function MatchCard({ match }: { match: MatchWithPred }) {
             {match.points != null && <span className="ml-2">(+{match.points} pts)</span>}
           </span>
         )}
-        {!match.status?.includes("finished") && closed && <span>Cerrado</span>}
+        {match.status !== "finished" && closed && (
+          <span className="text-gray-400">
+            {!jornadaOpen
+              ? match.jornada < activeJornada
+                ? "🔒 Jornada cerrada"
+                : "🔒 Jornada no abierta"
+              : "🔒 Cerrado"}
+          </span>
+        )}
       </div>
 
       <div className="flex items-center justify-between gap-2">

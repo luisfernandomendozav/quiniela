@@ -1,6 +1,7 @@
 import { redirect } from "next/navigation";
 import { getCurrentUser } from "@/lib/auth";
 import { sql } from "@/lib/db";
+import { getActiveJornada } from "@/lib/settings";
 import NavBar from "@/components/NavBar";
 import PlayersStrip from "@/components/PlayersStrip";
 import MatchList from "./MatchList";
@@ -39,6 +40,8 @@ export default async function MatchesPage() {
     ORDER BY m.group_name ASC, m.jornada ASC, m.match_date ASC
   `) as MatchWithPred[];
 
+  const activeJornada = await getActiveJornada();
+
   return (
     <>
       <NavBar user={user} />
@@ -46,9 +49,10 @@ export default async function MatchesPage() {
         <PlayersStrip subtitle="Pronostica al Tri ⚽🇲🇽" />
         <h1 className="text-xl font-bold mb-1">Fase de Grupos · Mundial 2026</h1>
         <p className="text-sm text-gray-500 mb-4">
-          72 partidos en 12 grupos. Pronostica el marcador de cada uno. ¡Vamos por el Tri 🇲🇽!
+          72 partidos en 12 grupos. Solo puedes pronosticar la{" "}
+          <span className="font-semibold text-brand">jornada activa (J{activeJornada})</span>.
         </p>
-        <MatchList matches={matches} />
+        <MatchList matches={matches} activeJornada={activeJornada} />
       </main>
     </>
   );

@@ -55,6 +55,19 @@ async function main() {
   await sql`ALTER TABLE quiniela.matches ADD COLUMN IF NOT EXISTS venue      TEXT`;
   await sql`ALTER TABLE quiniela.matches ADD COLUMN IF NOT EXISTS city       TEXT`;
 
+  // Configuración global (clave-valor). Ej: active_jornada = la jornada abierta.
+  await sql`
+    CREATE TABLE IF NOT EXISTS quiniela.settings (
+      key   TEXT PRIMARY KEY,
+      value TEXT NOT NULL
+    )
+  `;
+  await sql`
+    INSERT INTO quiniela.settings (key, value)
+    VALUES ('active_jornada', '1')
+    ON CONFLICT (key) DO NOTHING
+  `;
+
   await sql`
     CREATE TABLE IF NOT EXISTS quiniela.stadiums (
       id        SERIAL PRIMARY KEY,

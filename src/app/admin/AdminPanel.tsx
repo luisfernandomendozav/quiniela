@@ -4,7 +4,15 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import type { Match } from "@/lib/db";
 
-export default function AdminPanel({ matches }: { matches: Match[] }) {
+export default function AdminPanel({
+  matches,
+  activeJornada,
+  jornadas,
+}: {
+  matches: Match[];
+  activeJornada: number;
+  jornadas: number[];
+}) {
   const router = useRouter();
   const [jornada, setJornada] = useState("1");
   const [home, setHome] = useState("");
@@ -12,6 +20,18 @@ export default function AdminPanel({ matches }: { matches: Match[] }) {
   const [date, setDate] = useState("");
   const [creating, setCreating] = useState(false);
   const [err, setErr] = useState("");
+  const [savingJornada, setSavingJornada] = useState(false);
+
+  async function changeActiveJornada(n: number) {
+    setSavingJornada(true);
+    await fetch("/api/settings/active-jornada", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ jornada: n }),
+    });
+    setSavingJornada(false);
+    router.refresh();
+  }
 
   async function createMatch(e: React.FormEvent) {
     e.preventDefault();
@@ -51,6 +71,35 @@ export default function AdminPanel({ matches }: { matches: Match[] }) {
 
   return (
     <div className="space-y-8">
+      {/* Jornada activa */}
+      <section className="bg-gradient-to-r from-brand to-brand-light text-white rounded-xl shadow-sm p-4">
+        <h2 className="font-semibold mb-1">Jornada activa</h2>
+        <p className="text-sm opacity-90 mb-3">
+          Solo la jornada activa está abierta para que los jugadores pronostiquen. Las
+          anteriores y futuras quedan bloqueadas.
+        </p>
+        <div className="flex flex-wrap items-center gap-2">
+          {jornadas.map((n) => (
+            <button
+              key={n}
+              onClick={() => changeActiveJornada(n)}
+              disabled={savingJornada}
+              className={`px-4 py-1.5 rounded-full text-sm font-semibold border transition disabled:opacity-60 ${
+                n === activeJornada
+                  ? "bg-white text-brand border-white"
+                  : "bg-white/10 text-white border-white/40 hover:bg-white/20"
+              }`}
+            >
+              Jornada {n}
+              {n === activeJornada && " ✓"}
+            </button>
+          ))}
+          {jornadas.length === 0 && (
+            <span className="text-sm opacity-90">Crea partidos para habilitar jornadas.</span>
+          )}
+        </div>
+      </section>
+
       {/* Crear partido */}
       <section className="bg-white rounded-xl border shadow-sm p-4">
         <h2 className="font-semibold mb-3">Nuevo partido</h2>
