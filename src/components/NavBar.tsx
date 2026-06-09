@@ -16,6 +16,9 @@ export default function NavBar({ user }: { user: User }) {
         <Link href="/leaderboard" className="text-sm text-white/90 hover:text-white">
           Tabla
         </Link>
+        <Link href="/plantilla" className="text-sm text-white/90 hover:text-white">
+          Plantilla
+        </Link>
         <Link href="/sedes" className="text-sm text-white/90 hover:text-white">
           Sedes
         </Link>

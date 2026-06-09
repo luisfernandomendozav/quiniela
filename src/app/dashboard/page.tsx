@@ -3,6 +3,7 @@ import { redirect } from "next/navigation";
 import { getCurrentUser } from "@/lib/auth";
 import { sql } from "@/lib/db";
 import NavBar from "@/components/NavBar";
+import PlayersStrip from "@/components/PlayersStrip";
 import { flag } from "@/lib/teams";
 
 export const dynamic = "force-dynamic";
@@ -52,6 +53,8 @@ export default async function Dashboard() {
       <NavBar user={user} />
       <main className="max-w-4xl mx-auto px-4 py-6">
         <h1 className="text-xl font-bold mb-4">Hola, {user.name} 👋</h1>
+
+        <PlayersStrip />
 
         {nextMx[0] && (
           <div className="mb-6 rounded-xl p-4 text-white bg-gradient-to-r from-brand to-brand-light shadow">

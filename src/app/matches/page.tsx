@@ -2,6 +2,7 @@ import { redirect } from "next/navigation";
 import { getCurrentUser } from "@/lib/auth";
 import { sql } from "@/lib/db";
 import NavBar from "@/components/NavBar";
+import PlayersStrip from "@/components/PlayersStrip";
 import MatchList from "./MatchList";
 
 export const dynamic = "force-dynamic";
@@ -41,6 +42,7 @@ export default async function MatchesPage() {
     <>
       <NavBar user={user} />
       <main className="max-w-4xl mx-auto px-4 py-6">
+        <PlayersStrip subtitle="Pronostica al Tri ⚽🇲🇽" />
         <h1 className="text-xl font-bold mb-1">Partidos · Grupo A 🇲🇽</h1>
         <p className="text-sm text-gray-500 mb-4">
           Pronostica el marcador de cada partido. ¡Vamos por el Tri!

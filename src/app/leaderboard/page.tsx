@@ -2,6 +2,7 @@ import { redirect } from "next/navigation";
 import { getCurrentUser } from "@/lib/auth";
 import { sql } from "@/lib/db";
 import NavBar from "@/components/NavBar";
+import PlayersStrip from "@/components/PlayersStrip";
 
 export const dynamic = "force-dynamic";
 
@@ -24,6 +25,7 @@ export default async function LeaderboardPage() {
     <>
       <NavBar user={user} />
       <main className="max-w-4xl mx-auto px-4 py-6">
+        <PlayersStrip subtitle="¿Quién manda en la quiniela? 🏆" />
         <h1 className="text-xl font-bold mb-4">Tabla de posiciones</h1>
         <div className="bg-white rounded-xl border shadow-sm overflow-hidden">
           <table className="w-full text-sm">

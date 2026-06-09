@@ -1,0 +1,24 @@
+[
+  { "slug": "guillermo-ochoa", "name": "Guillermo Ochoa", "pos": "Portero", "number": 13, "club": "AVS", "search": "Guillermo Ochoa portero mexicano" },
+  { "slug": "luis-malagon", "name": "Luis Malagón", "pos": "Portero", "number": 1, "club": "Club América", "search": "Luis Malagón portero mexicano" },
+  { "slug": "julio-gonzalez", "name": "Julio González", "pos": "Portero", "number": 12, "club": "Pumas UNAM", "search": "Julio González portero Pumas mexicano" },
+
+  { "slug": "jorge-sanchez", "name": "Jorge Sánchez", "pos": "Defensa", "number": 19, "club": "Cruz Azul", "search": "Jorge Sánchez lateral selección mexicana" },
+  { "slug": "johan-vasquez", "name": "Johan Vásquez", "pos": "Defensa", "number": 3, "club": "Genoa", "search": "Johan Vásquez futbolista mexicano" },
+  { "slug": "cesar-montes", "name": "César Montes", "pos": "Defensa", "number": 4, "club": "Lokomotiv Moscú", "search": "César Montes futbolista mexicano defensa" },
+  { "slug": "israel-reyes", "name": "Israel Reyes", "pos": "Defensa", "number": 2, "club": "Club América", "search": "Israel Reyes futbolista mexicano" },
+  { "slug": "jesus-gallardo", "name": "Jesús Gallardo", "pos": "Defensa", "number": 23, "club": "Toluca", "search": "Jesús Gallardo futbolista mexicano" },
+  { "slug": "gerardo-arteaga", "name": "Gerardo Arteaga", "pos": "Defensa", "number": 5, "club": "Genoa", "search": "Gerardo Arteaga futbolista mexicano" },
+
+  { "slug": "edson-alvarez", "name": "Edson Álvarez", "pos": "Mediocampista", "number": 4, "club": "Fenerbahçe", "search": "Edson Álvarez futbolista mexicano" },
+  { "slug": "luis-chavez", "name": "Luis Chávez", "pos": "Mediocampista", "number": 14, "club": "Dinamo Moscú", "search": "Luis Chávez futbolista mexicano Pachuca" },
+  { "slug": "luis-romo", "name": "Luis Romo", "pos": "Mediocampista", "number": 6, "club": "Cruz Azul", "search": "Luis Romo futbolista mexicano" },
+  { "slug": "orbelin-pineda", "name": "Orbelín Pineda", "pos": "Mediocampista", "number": 10, "club": "AEK Atenas", "search": "Orbelín Pineda futbolista mexicano" },
+  { "slug": "roberto-alvarado", "name": "Roberto Alvarado", "pos": "Mediocampista", "number": 8, "club": "Chivas", "search": "Roberto Alvarado futbolista mexicano Chivas" },
+
+  { "slug": "hirving-lozano", "name": "Hirving Lozano", "pos": "Delantero", "number": 22, "club": "San Diego FC", "search": "Hirving Lozano futbolista mexicano" },
+  { "slug": "santiago-gimenez", "name": "Santiago Giménez", "pos": "Delantero", "number": 9, "club": "AC Milan", "search": "Santiago Giménez futbolista mexicano" },
+  { "slug": "raul-jimenez", "name": "Raúl Jiménez", "pos": "Delantero", "number": 11, "club": "Fulham", "search": "Raúl Jiménez futbolista mexicano" },
+  { "slug": "alexis-vega", "name": "Alexis Vega", "pos": "Delantero", "number": 7, "club": "Toluca", "search": "Alexis Vega futbolista mexicano" },
+  { "slug": "julian-quinones", "name": "Julián Quiñones", "pos": "Delantero", "number": 17, "club": "Al-Qadsiah", "search": "Julián Quiñones futbolista mexicano América" }
+]

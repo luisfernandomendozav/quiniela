@@ -2,6 +2,7 @@ import { redirect } from "next/navigation";
 import { getCurrentUser } from "@/lib/auth";
 import { sql, type Stadium } from "@/lib/db";
 import NavBar from "@/components/NavBar";
+import PlayersStrip from "@/components/PlayersStrip";
 
 export const dynamic = "force-dynamic";
 
@@ -25,6 +26,7 @@ export default async function SedesPage() {
     <>
       <NavBar user={user} />
       <main className="max-w-4xl mx-auto px-4 py-6">
+        <PlayersStrip subtitle="Las casas del Tri 🏟️🇲🇽" />
         <h1 className="text-xl font-bold mb-1">Sedes del Mundial 2026</h1>
         <p className="text-sm text-gray-500 mb-4">
           16 estadios en 🇲🇽 México, 🇺🇸 Estados Unidos y 🇨🇦 Canadá. El Tri juega en las tres
