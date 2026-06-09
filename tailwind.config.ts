@@ -4,6 +4,9 @@ const config: Config = {
   content: ["./src/**/*.{js,ts,jsx,tsx,mdx}"],
   theme: {
     extend: {
+      screens: {
+        xs: "400px",
+      },
       colors: {
         // Verde de la Selección Mexicana
         brand: {

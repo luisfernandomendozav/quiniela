@@ -158,8 +158,8 @@ function MatchCard({
         mexicoMatch ? "border-brand/40 ring-1 ring-brand/20" : ""
       }`}
     >
-      <div className="flex items-center justify-between text-xs text-gray-400 mb-2">
-        <span>
+      <div className="flex items-start justify-between gap-2 text-xs text-gray-400 mb-3">
+        <span className="min-w-0">
           <span className="font-semibold text-gray-500 mr-2">J{match.jornada}</span>
           {new Date(match.match_date).toLocaleString("es-MX", {
             weekday: "short",
@@ -169,57 +169,45 @@ function MatchCard({
             minute: "2-digit",
           })}
           {match.venue && (
-            <span className="ml-2 text-gray-400">
-              · 📍 {match.venue}
+            <span className="block text-gray-400 mt-0.5">
+              📍 {match.venue}
               {match.city ? `, ${match.city}` : ""}
             </span>
           )}
         </span>
         {match.status === "finished" && (
-          <span className="text-brand font-semibold">
-            Final: {match.home_score} - {match.away_score}
-            {match.points != null && <span className="ml-2">(+{match.points} pts)</span>}
+          <span className="text-brand font-semibold whitespace-nowrap shrink-0">
+            Final {match.home_score}-{match.away_score}
+            {match.points != null && <span className="ml-1">(+{match.points})</span>}
           </span>
         )}
         {match.status !== "finished" && closed && (
-          <span className="text-gray-400">
+          <span className="text-gray-400 whitespace-nowrap shrink-0">
             {!jornadaOpen
               ? match.jornada < activeJornada
-                ? "🔒 Jornada cerrada"
-                : "🔒 Jornada no abierta"
+                ? "🔒 Cerrada"
+                : "🔒 No abierta"
               : "🔒 Cerrado"}
           </span>
         )}
       </div>
 
-      <div className="flex items-center justify-between gap-2">
-        <span className="flex-1 text-right font-medium flex items-center justify-end gap-2">
-          {match.home_team} <Flag team={match.home_team} />
-        </span>
-
-        <div className="flex items-center gap-1">
-          <input
-            type="number"
-            min={0}
-            value={home}
-            disabled={closed}
-            onChange={(e) => setHome(e.target.value)}
-            className="w-12 text-center border rounded-lg py-1 disabled:bg-gray-100"
-          />
-          <span className="text-gray-400">-</span>
-          <input
-            type="number"
-            min={0}
-            value={away}
-            disabled={closed}
-            onChange={(e) => setAway(e.target.value)}
-            className="w-12 text-center border rounded-lg py-1 disabled:bg-gray-100"
-          />
-        </div>
-
-        <span className="flex-1 text-left font-medium flex items-center gap-2">
-          <Flag team={match.away_team} /> {match.away_team}
-        </span>
+      {/* Cada equipo en su fila: cómodo de tocar en móvil */}
+      <div className="space-y-2">
+        <TeamRow
+          team={match.home_team}
+          value={home}
+          onChange={setHome}
+          disabled={closed}
+          finalScore={match.status === "finished" ? match.home_score : null}
+        />
+        <TeamRow
+          team={match.away_team}
+          value={away}
+          onChange={setAway}
+          disabled={closed}
+          finalScore={match.status === "finished" ? match.away_score : null}
+        />
       </div>
 
       {!closed && (
@@ -228,11 +216,46 @@ function MatchCard({
           <button
             onClick={save}
             disabled={saving || home === "" || away === ""}
-            className="bg-brand hover:bg-brand-dark text-white text-sm rounded-lg px-4 py-1.5 disabled:opacity-50"
+            className="bg-brand hover:bg-brand-dark active:bg-brand-dark text-white font-medium rounded-lg px-5 py-2.5 min-h-[44px] disabled:opacity-50 w-full sm:w-auto"
           >
-            {saving ? "..." : match.pred_home != null ? "Actualizar" : "Pronosticar"}
+            {saving ? "Guardando..." : match.pred_home != null ? "Actualizar pronóstico" : "Pronosticar"}
           </button>
         </div>
+      )}
+    </div>
+  );
+}
+
+function TeamRow({
+  team,
+  value,
+  onChange,
+  disabled,
+  finalScore,
+}: {
+  team: string;
+  value: string;
+  onChange: (v: string) => void;
+  disabled: boolean;
+  finalScore: number | null;
+}) {
+  return (
+    <div className="flex items-center gap-3">
+      <Flag team={team} className="h-5 w-7 shrink-0" />
+      <span className="flex-1 min-w-0 font-medium truncate">{team}</span>
+      {finalScore != null ? (
+        <span className="w-12 text-center text-lg font-bold text-gray-700">{finalScore}</span>
+      ) : (
+        <input
+          type="number"
+          inputMode="numeric"
+          min={0}
+          value={value}
+          disabled={disabled}
+          onChange={(e) => onChange(e.target.value)}
+          placeholder="–"
+          className="w-14 h-11 text-center text-lg border rounded-lg disabled:bg-gray-100 disabled:text-gray-400 focus:border-brand focus:ring-1 focus:ring-brand outline-none"
+        />
       )}
     </div>
   );

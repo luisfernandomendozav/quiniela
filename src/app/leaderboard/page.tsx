@@ -24,33 +24,39 @@ export default async function LeaderboardPage() {
   return (
     <>
       <NavBar user={user} />
-      <main className="max-w-4xl mx-auto px-4 py-6">
+      <main className="max-w-4xl mx-auto px-4 pt-6 pb-24 md:pb-8">
         <PlayersStrip subtitle="¿Quién manda en la quiniela? 🏆" />
         <h1 className="text-xl font-bold mb-4">Tabla de posiciones</h1>
         <div className="bg-white rounded-xl border shadow-sm overflow-hidden">
           <table className="w-full text-sm">
             <thead className="bg-gray-50 text-gray-500">
               <tr>
-                <th className="text-left px-4 py-2 w-10">#</th>
-                <th className="text-left px-4 py-2">Jugador</th>
-                <th className="text-center px-2 py-2">Pron.</th>
-                <th className="text-center px-2 py-2">Exactos</th>
-                <th className="text-right px-4 py-2">Puntos</th>
+                <th className="text-left px-3 sm:px-4 py-2.5 w-10">#</th>
+                <th className="text-left px-2 sm:px-4 py-2.5">Jugador</th>
+                <th className="text-center px-2 py-2.5 hidden sm:table-cell">Pron.</th>
+                <th className="text-center px-2 py-2.5 hidden sm:table-cell">Exactos</th>
+                <th className="text-right px-3 sm:px-4 py-2.5">Puntos</th>
               </tr>
             </thead>
             <tbody className="divide-y">
               {rows.map((r, i) => (
                 <tr key={r.id} className={r.id === user.id ? "bg-green-50" : ""}>
-                  <td className="px-4 py-2 font-semibold text-gray-400">
+                  <td className="px-3 sm:px-4 py-3 font-semibold text-gray-400">
                     {i === 0 ? "🥇" : i === 1 ? "🥈" : i === 2 ? "🥉" : i + 1}
                   </td>
-                  <td className="px-4 py-2 font-medium">
-                    {r.name}
+                  <td className="px-2 sm:px-4 py-3 font-medium">
+                    <span className="truncate inline-block max-w-[55vw] sm:max-w-none align-middle">
+                      {r.name}
+                    </span>
                     {r.id === user.id && <span className="text-brand text-xs ml-1">(tú)</span>}
+                    {/* En móvil, las estadísticas secundarias van debajo del nombre */}
+                    <span className="block sm:hidden text-[11px] text-gray-400 font-normal mt-0.5">
+                      {r.preds} pron. · {r.exactos} exactos
+                    </span>
                   </td>
-                  <td className="px-2 py-2 text-center text-gray-500">{r.preds}</td>
-                  <td className="px-2 py-2 text-center text-gray-500">{r.exactos}</td>
-                  <td className="px-4 py-2 text-right font-bold text-brand">{r.points}</td>
+                  <td className="px-2 py-3 text-center text-gray-500 hidden sm:table-cell">{r.preds}</td>
+                  <td className="px-2 py-3 text-center text-gray-500 hidden sm:table-cell">{r.exactos}</td>
+                  <td className="px-3 sm:px-4 py-3 text-right font-bold text-brand text-base">{r.points}</td>
                 </tr>
               ))}
             </tbody>

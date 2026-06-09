@@ -27,14 +27,16 @@ export default function PlayersStrip({
           <div className="text-xs opacity-80 mt-0.5">Ver plantilla completa →</div>
         </div>
         <div className="flex -space-x-3 ml-auto shrink-0">
-          {stars.map((p) => (
+          {stars.map((p, i) => (
             <img
               key={p.slug}
               src={p.src!}
               alt={p.name}
               title={p.name}
               loading="lazy"
-              className="w-12 h-12 rounded-full object-cover border-2 border-white bg-white/20"
+              className={`w-10 h-10 sm:w-12 sm:h-12 rounded-full object-cover object-top border-2 border-white bg-white/20 ${
+                i >= 4 ? "hidden xs:block" : ""
+              } ${i >= 6 ? "xs:hidden sm:block" : ""}`}
             />
           ))}
         </div>

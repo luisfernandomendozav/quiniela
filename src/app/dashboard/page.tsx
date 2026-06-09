@@ -51,7 +51,7 @@ export default async function Dashboard() {
   return (
     <>
       <NavBar user={user} />
-      <main className="max-w-4xl mx-auto px-4 py-6">
+      <main className="max-w-4xl mx-auto px-4 pt-6 pb-24 md:pb-8">
         <h1 className="text-xl font-bold mb-4">Hola, {user.name} 👋</h1>
 
         <PlayersStrip />
@@ -90,13 +90,14 @@ export default async function Dashboard() {
           ) : (
             <ul className="divide-y">
               {upcoming.map((m) => (
-                <li key={m.id} className="py-2 flex items-center justify-between text-sm">
-                  <span className="flex items-center gap-1.5">
-                    <span className="text-gray-400 mr-1">J{m.jornada}</span>
-                    <Flag team={m.home_team} className="h-3.5 w-5" /> {m.home_team} vs {m.away_team}{" "}
-                    <Flag team={m.away_team} className="h-3.5 w-5" />
+                <li key={m.id} className="py-2.5 flex items-center gap-2 text-sm">
+                  <span className="text-gray-400 text-xs shrink-0">J{m.jornada}</span>
+                  <Flag team={m.home_team} className="h-3.5 w-5 shrink-0" />
+                  <span className="truncate min-w-0">
+                    {m.home_team} <span className="text-gray-400">vs</span> {m.away_team}
                   </span>
-                  <span className="text-gray-500">
+                  <Flag team={m.away_team} className="h-3.5 w-5 shrink-0" />
+                  <span className="ml-auto text-xs text-gray-500 shrink-0">
                     {new Date(m.match_date).toLocaleString("es-MX", {
                       day: "2-digit",
                       month: "short",

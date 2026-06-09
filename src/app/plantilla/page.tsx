@@ -12,7 +12,7 @@ export default async function PlantillaPage() {
   return (
     <>
       <NavBar user={user} />
-      <main className="max-w-4xl mx-auto px-4 py-6">
+      <main className="max-w-4xl mx-auto px-4 pt-6 pb-24 md:pb-8">
         <div className="rounded-2xl bg-gradient-to-r from-brand via-brand-dark to-mxred text-white p-6 mb-6 shadow">
           <h1 className="text-2xl font-extrabold">Plantilla de México 🇲🇽</h1>
           <p className="text-sm opacity-90 mt-1">
