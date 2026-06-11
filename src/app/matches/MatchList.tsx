@@ -2,20 +2,34 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
-import type { MatchWithPred } from "./page";
+import type { MatchWithPred, RevealedPred } from "./page";
 import { isMexico } from "@/lib/teams";
 import Flag from "@/components/Flag";
+import SwipeMode from "./SwipeMode";
 
 export default function MatchList({
   matches,
   activeJornada,
+  revealed,
 }: {
   matches: MatchWithPred[];
   activeJornada: number;
+  revealed: Record<number, RevealedPred[]>;
 }) {
   // Jornadas disponibles (1, 2, 3...) y filtro seleccionado (por defecto la activa)
   const jornadas = Array.from(new Set(matches.map((m) => m.jornada))).sort((a, b) => a - b);
   const [filter, setFilter] = useState<number | "all">(activeJornada);
+  const [swipeOpen, setSwipeOpen] = useState(false);
+
+  // Partidos de la jornada activa que aún aceptan pronósticos (para el modo rápido)
+  const openMatches = matches
+    .filter(
+      (m) =>
+        m.jornada === activeJornada &&
+        m.status !== "finished" &&
+        new Date(m.match_date) > new Date()
+    )
+    .sort((a, b) => new Date(a.match_date).getTime() - new Date(b.match_date).getTime());
 
   if (matches.length === 0) {
     return <p className="text-gray-500">Aún no hay partidos cargados.</p>;
@@ -106,13 +120,31 @@ export default function MatchList({
               </div>
               <div className="space-y-3">
                 {games.map((m) => (
-                  <MatchCard key={m.id} match={m} activeJornada={activeJornada} />
+                  <MatchCard
+                    key={m.id}
+                    match={m}
+                    activeJornada={activeJornada}
+                    allPreds={revealed[m.id] ?? []}
+                  />
                 ))}
               </div>
             </section>
           );
         })}
       </div>
+
+      {/* Modo rápido estilo TikTok (móvil): pronostica deslizando */}
+      {openMatches.length > 0 && !swipeOpen && (
+        <button
+          onClick={() => setSwipeOpen(true)}
+          className="md:hidden fixed bottom-20 right-4 z-30 bg-brand text-white font-semibold rounded-full shadow-lg px-5 py-3.5 flex items-center gap-2 active:scale-95 transition"
+        >
+          ⚡ Modo rápido
+        </button>
+      )}
+      {swipeOpen && (
+        <SwipeMode matches={openMatches} onClose={() => setSwipeOpen(false)} />
+      )}
     </>
   );
 }
@@ -120,9 +152,11 @@ export default function MatchList({
 function MatchCard({
   match,
   activeJornada,
+  allPreds,
 }: {
   match: MatchWithPred;
   activeJornada: number;
+  allPreds: RevealedPred[];
 }) {
   const router = useRouter();
   const jornadaOpen = match.jornada === activeJornada;
@@ -221,6 +255,36 @@ function MatchCard({
             {saving ? "Guardando..." : match.pred_home != null ? "Actualizar pronóstico" : "Pronosticar"}
           </button>
         </div>
+      )}
+
+      {/* Pronósticos de todos: solo cuando el partido ya cerró y nadie puede cambiarlos */}
+      {closed && allPreds.length > 0 && (
+        <details className="mt-3 pt-2 border-t border-gray-100">
+          <summary className="text-sm text-gray-500 cursor-pointer select-none list-none flex items-center gap-1.5 min-h-[32px]">
+            <span>👥</span>
+            <span>Pronósticos de todos ({allPreds.length})</span>
+            <span className="text-gray-300 text-xs ml-auto">ver ▾</span>
+          </summary>
+          <ul className="mt-2 space-y-1.5">
+            {allPreds.map((p) => (
+              <li key={p.user_name} className="flex items-center gap-2 text-sm">
+                <span className="flex-1 min-w-0 truncate text-gray-700">{p.user_name}</span>
+                <span className="font-bold tabular-nums text-gray-800">
+                  {p.pred_home}-{p.pred_away}
+                </span>
+                {match.status === "finished" && (
+                  <span
+                    className={`text-xs font-semibold rounded-full px-2 py-0.5 ${
+                      p.points > 0 ? "bg-brand/10 text-brand" : "bg-gray-100 text-gray-400"
+                    }`}
+                  >
+                    +{p.points}
+                  </span>
+                )}
+              </li>
+            ))}
+          </ul>
+        </details>
       )}
     </div>
   );

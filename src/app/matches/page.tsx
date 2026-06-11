@@ -26,6 +26,15 @@ export type MatchWithPred = {
   points: number | null;
 };
 
+// Pronóstico de otro jugador, visible cuando el partido ya cerró
+export type RevealedPred = {
+  match_id: number;
+  user_name: string;
+  pred_home: number;
+  pred_away: number;
+  points: number;
+};
+
 export default async function MatchesPage() {
   const user = await getCurrentUser();
   if (!user) redirect("/login");
@@ -42,6 +51,22 @@ export default async function MatchesPage() {
 
   const activeJornada = await getActiveJornada();
 
+  // Pronósticos de TODOS los jugadores, pero solo de partidos donde ya nadie
+  // puede cambiar el suyo: jornada cerrada, partido iniciado o terminado.
+  const revealedRows = (await sql`
+    SELECT p.match_id, u.name AS user_name, p.pred_home, p.pred_away, p.points
+    FROM quiniela.predictions p
+    JOIN quiniela.users u ON u.id = p.user_id
+    JOIN quiniela.matches m ON m.id = p.match_id
+    WHERE m.jornada < ${activeJornada}
+       OR m.status = 'finished'
+       OR m.match_date <= now()
+    ORDER BY u.name ASC
+  `) as RevealedPred[];
+
+  const revealed: Record<number, RevealedPred[]> = {};
+  for (const r of revealedRows) (revealed[r.match_id] ||= []).push(r);
+
   return (
     <>
       <NavBar user={user} />
@@ -52,7 +77,7 @@ export default async function MatchesPage() {
           72 partidos en 12 grupos. Solo puedes pronosticar la{" "}
           <span className="font-semibold text-brand">jornada activa (J{activeJornada})</span>.
         </p>
-        <MatchList matches={matches} activeJornada={activeJornada} />
+        <MatchList matches={matches} activeJornada={activeJornada} revealed={revealed} />
       </main>
     </>
   );
