@@ -54,12 +54,15 @@ export default async function MatchesPage() {
 
   // Pronósticos de TODOS los jugadores, pero solo de partidos donde ya nadie
   // puede cambiar el suyo: jornada cerrada, partido iniciado o terminado.
+  // Si el admin activó el candado global, nadie puede editar, así que se
+  // revelan los de TODOS los partidos (parte de la diversión es ver qué pusieron los demás).
   const revealedRows = (await sql`
     SELECT p.match_id, u.name AS user_name, p.pred_home, p.pred_away, p.points
     FROM quiniela.predictions p
     JOIN quiniela.users u ON u.id = p.user_id
     JOIN quiniela.matches m ON m.id = p.match_id
-    WHERE m.jornada < ${activeJornada}
+    WHERE ${predictionsLocked}
+       OR m.jornada < ${activeJornada}
        OR m.status = 'finished'
        OR m.match_date <= now()
     ORDER BY u.name ASC
