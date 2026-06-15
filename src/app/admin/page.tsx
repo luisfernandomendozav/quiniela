@@ -1,7 +1,7 @@
 import { redirect } from "next/navigation";
 import { getCurrentUser } from "@/lib/auth";
 import { sql, type Match } from "@/lib/db";
-import { getActiveJornada } from "@/lib/settings";
+import { getActiveJornada, getPredictionsLocked } from "@/lib/settings";
 import NavBar from "@/components/NavBar";
 import AdminPanel from "./AdminPanel";
 
@@ -19,6 +19,7 @@ export default async function AdminPage() {
   `) as Match[];
 
   const activeJornada = await getActiveJornada();
+  const predictionsLocked = await getPredictionsLocked();
   const jornadas = (await sql`
     SELECT DISTINCT jornada FROM quiniela.matches ORDER BY jornada ASC
   `) as { jornada: number }[];
@@ -32,6 +33,7 @@ export default async function AdminPage() {
           matches={matches}
           activeJornada={activeJornada}
           jornadas={jornadas.map((j) => j.jornada)}
+          predictionsLocked={predictionsLocked}
         />
       </main>
     </>

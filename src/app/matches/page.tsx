@@ -1,7 +1,7 @@
 import { redirect } from "next/navigation";
 import { getCurrentUser } from "@/lib/auth";
 import { sql } from "@/lib/db";
-import { getActiveJornada } from "@/lib/settings";
+import { getActiveJornada, getPredictionsLocked } from "@/lib/settings";
 import NavBar from "@/components/NavBar";
 import PlayersStrip from "@/components/PlayersStrip";
 import MatchList from "./MatchList";
@@ -50,6 +50,7 @@ export default async function MatchesPage() {
   `) as MatchWithPred[];
 
   const activeJornada = await getActiveJornada();
+  const predictionsLocked = await getPredictionsLocked();
 
   // Pronósticos de TODOS los jugadores, pero solo de partidos donde ya nadie
   // puede cambiar el suyo: jornada cerrada, partido iniciado o terminado.
@@ -77,7 +78,17 @@ export default async function MatchesPage() {
           72 partidos en 12 grupos. Solo puedes pronosticar la{" "}
           <span className="font-semibold text-brand">jornada activa (J{activeJornada})</span>.
         </p>
-        <MatchList matches={matches} activeJornada={activeJornada} revealed={revealed} />
+        {predictionsLocked && (
+          <div className="mb-4 rounded-xl border border-mxred/40 bg-mxred/10 text-mxred px-4 py-3 text-sm font-medium flex items-center gap-2">
+            🔒 Los pronósticos están bloqueados por el administrador. No se pueden hacer cambios por ahora.
+          </div>
+        )}
+        <MatchList
+          matches={matches}
+          activeJornada={activeJornada}
+          revealed={revealed}
+          locked={predictionsLocked}
+        />
       </main>
     </>
   );

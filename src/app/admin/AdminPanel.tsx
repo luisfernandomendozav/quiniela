@@ -8,10 +8,12 @@ export default function AdminPanel({
   matches,
   activeJornada,
   jornadas,
+  predictionsLocked,
 }: {
   matches: Match[];
   activeJornada: number;
   jornadas: number[];
+  predictionsLocked: boolean;
 }) {
   const router = useRouter();
   const [jornada, setJornada] = useState("1");
@@ -21,6 +23,7 @@ export default function AdminPanel({
   const [creating, setCreating] = useState(false);
   const [err, setErr] = useState("");
   const [savingJornada, setSavingJornada] = useState(false);
+  const [savingLock, setSavingLock] = useState(false);
 
   async function changeActiveJornada(n: number) {
     setSavingJornada(true);
@@ -30,6 +33,17 @@ export default function AdminPanel({
       body: JSON.stringify({ jornada: n }),
     });
     setSavingJornada(false);
+    router.refresh();
+  }
+
+  async function toggleLock() {
+    setSavingLock(true);
+    await fetch("/api/settings/predictions-lock", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ locked: !predictionsLocked }),
+    });
+    setSavingLock(false);
     router.refresh();
   }
 
@@ -71,6 +85,43 @@ export default function AdminPanel({
 
   return (
     <div className="space-y-8">
+      {/* Candado global de pronósticos */}
+      <section
+        className={`rounded-xl shadow-sm p-4 border ${
+          predictionsLocked
+            ? "bg-mxred/10 border-mxred/40"
+            : "bg-white border-gray-200"
+        }`}
+      >
+        <div className="flex items-center justify-between gap-4">
+          <div className="min-w-0">
+            <h2 className="font-semibold flex items-center gap-2">
+              {predictionsLocked ? "🔒" : "🔓"} Bloquear pronósticos
+            </h2>
+            <p className="text-sm text-gray-500 mt-1">
+              {predictionsLocked
+                ? "Bloqueado: nadie puede crear ni editar pronósticos en ninguna jornada."
+                : "Abierto: los jugadores pueden pronosticar la jornada activa con normalidad."}
+            </p>
+          </div>
+          <button
+            onClick={toggleLock}
+            disabled={savingLock}
+            role="switch"
+            aria-checked={predictionsLocked}
+            className={`relative shrink-0 w-14 h-8 rounded-full transition disabled:opacity-60 ${
+              predictionsLocked ? "bg-mxred" : "bg-gray-300"
+            }`}
+          >
+            <span
+              className={`absolute top-1 h-6 w-6 rounded-full bg-white shadow transition-all ${
+                predictionsLocked ? "left-7" : "left-1"
+              }`}
+            />
+          </button>
+        </div>
+      </section>
+
       {/* Jornada activa */}
       <section className="bg-gradient-to-r from-brand to-brand-light text-white rounded-xl shadow-sm p-4">
         <h2 className="font-semibold mb-1">Jornada activa</h2>

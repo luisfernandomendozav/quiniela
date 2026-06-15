@@ -1,12 +1,20 @@
 import { NextRequest, NextResponse } from "next/server";
 import { sql } from "@/lib/db";
 import { getCurrentUser } from "@/lib/auth";
-import { getActiveJornada } from "@/lib/settings";
+import { getActiveJornada, getPredictionsLocked } from "@/lib/settings";
 
 // Guarda o actualiza el pronóstico del usuario para un partido.
 export async function POST(req: NextRequest) {
   const user = await getCurrentUser();
   if (!user) return NextResponse.json({ error: "No autenticado" }, { status: 401 });
+
+  // Candado global del admin: bloquea ediciones en todas las jornadas.
+  if (await getPredictionsLocked()) {
+    return NextResponse.json(
+      { error: "Los pronósticos están bloqueados por el administrador" },
+      { status: 403 }
+    );
+  }
 
   const { matchId, predHome, predAway } = await req.json();
   const h = Number(predHome);

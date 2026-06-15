@@ -67,6 +67,11 @@ async function main() {
     VALUES ('active_jornada', '1')
     ON CONFLICT (key) DO NOTHING
   `;
+  await sql`
+    INSERT INTO quiniela.settings (key, value)
+    VALUES ('predictions_locked', 'false')
+    ON CONFLICT (key) DO NOTHING
+  `;
 
   await sql`
     CREATE TABLE IF NOT EXISTS quiniela.stadiums (

@@ -11,18 +11,21 @@ export default function MatchList({
   matches,
   activeJornada,
   revealed,
+  locked,
 }: {
   matches: MatchWithPred[];
   activeJornada: number;
   revealed: Record<number, RevealedPred[]>;
+  locked: boolean;
 }) {
   // Jornadas disponibles (1, 2, 3...) y filtro seleccionado (por defecto la activa)
   const jornadas = Array.from(new Set(matches.map((m) => m.jornada))).sort((a, b) => a - b);
   const [filter, setFilter] = useState<number | "all">(activeJornada);
   const [swipeOpen, setSwipeOpen] = useState(false);
 
-  // Partidos de la jornada activa que aún aceptan pronósticos (para el modo rápido)
-  const openMatches = matches
+  // Partidos de la jornada activa que aún aceptan pronósticos (para el modo rápido).
+  // Si el admin bloqueó todo, no hay partidos abiertos.
+  const openMatches = (locked ? [] : matches)
     .filter(
       (m) =>
         m.jornada === activeJornada &&
@@ -125,6 +128,7 @@ export default function MatchList({
                     match={m}
                     activeJornada={activeJornada}
                     allPreds={revealed[m.id] ?? []}
+                    locked={locked}
                   />
                 ))}
               </div>
@@ -153,15 +157,17 @@ function MatchCard({
   match,
   activeJornada,
   allPreds,
+  locked,
 }: {
   match: MatchWithPred;
   activeJornada: number;
   allPreds: RevealedPred[];
+  locked: boolean;
 }) {
   const router = useRouter();
   const jornadaOpen = match.jornada === activeJornada;
   const started = match.status === "finished" || new Date(match.match_date) <= new Date();
-  const closed = !jornadaOpen || started;
+  const closed = locked || !jornadaOpen || started;
   const [home, setHome] = useState(match.pred_home?.toString() ?? "");
   const [away, setAway] = useState(match.pred_away?.toString() ?? "");
   const [saving, setSaving] = useState(false);
