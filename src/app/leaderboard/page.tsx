@@ -14,7 +14,7 @@ export default async function LeaderboardPage() {
     SELECT u.id, u.name,
            COALESCE(SUM(p.points), 0)::int AS points,
            COUNT(p.id)::int AS preds,
-           COALESCE(SUM(CASE WHEN p.points = 3 THEN 1 ELSE 0 END), 0)::int AS exactos
+           COALESCE(SUM(CASE WHEN p.points = 2 THEN 1 ELSE 0 END), 0)::int AS exactos
     FROM quiniela.users u
     LEFT JOIN quiniela.predictions p ON p.user_id = u.id
     GROUP BY u.id, u.name
@@ -63,7 +63,7 @@ export default async function LeaderboardPage() {
           </table>
         </div>
         <p className="text-xs text-gray-400 mt-3">
-          Puntuación: resultado exacto = 3 pts · acertar ganador/empate = 1 pt
+          Puntuación: resultado exacto = 2 pts · acertar ganador/empate = 1 pt
         </p>
       </main>
     </>
