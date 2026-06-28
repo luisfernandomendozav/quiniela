@@ -134,6 +134,53 @@ const GROUPS = {
   ],
 };
 
+// Rondas eliminatorias del Mundial 2026 (partidos 73-104).
+// Fuente: calendario oficial replicado en Wikipedia, con horas convertidas a UTC.
+// Formato: [local, visitante, jornada, fecha UTC, etapa, estadio, ciudad]
+const KNOCKOUTS = [
+  // Dieciseisavos de final
+  ["Sudáfrica", "Canadá", 4, "2026-06-28T19:00:00Z", "Dieciseisavos de Final", "SoFi Stadium", "Inglewood"],
+  ["Brasil", "Japón", 4, "2026-06-29T17:00:00Z", "Dieciseisavos de Final", "NRG Stadium", "Houston"],
+  ["Alemania", "Paraguay", 4, "2026-06-29T20:30:00Z", "Dieciseisavos de Final", "Gillette Stadium", "Foxborough"],
+  ["Países Bajos", "Marruecos", 4, "2026-06-30T01:00:00Z", "Dieciseisavos de Final", "Estadio BBVA", "Guadalupe"],
+  ["Costa de Marfil", "Noruega", 4, "2026-06-30T17:00:00Z", "Dieciseisavos de Final", "AT&T Stadium", "Arlington"],
+  ["Francia", "Suecia", 4, "2026-06-30T21:00:00Z", "Dieciseisavos de Final", "MetLife Stadium", "East Rutherford"],
+  ["México", "Ecuador", 4, "2026-07-01T01:00:00Z", "Dieciseisavos de Final", "Estadio Azteca (Estadio Banorte)", "Ciudad de México"],
+  ["Inglaterra", "RD Congo", 4, "2026-07-01T16:00:00Z", "Dieciseisavos de Final", "Mercedes-Benz Stadium", "Atlanta"],
+  ["Bélgica", "Senegal", 4, "2026-07-01T20:00:00Z", "Dieciseisavos de Final", "Lumen Field", "Seattle"],
+  ["Estados Unidos", "Bosnia y Herzegovina", 4, "2026-07-02T00:00:00Z", "Dieciseisavos de Final", "Levi's Stadium", "Santa Clara"],
+  ["España", "Austria", 4, "2026-07-02T19:00:00Z", "Dieciseisavos de Final", "SoFi Stadium", "Inglewood"],
+  ["Portugal", "Croacia", 4, "2026-07-02T23:00:00Z", "Dieciseisavos de Final", "BMO Field", "Toronto"],
+  ["Suiza", "Argelia", 4, "2026-07-03T03:00:00Z", "Dieciseisavos de Final", "BC Place", "Vancouver"],
+  ["Australia", "Egipto", 4, "2026-07-03T18:00:00Z", "Dieciseisavos de Final", "AT&T Stadium", "Arlington"],
+  ["Argentina", "Cabo Verde", 4, "2026-07-03T22:00:00Z", "Dieciseisavos de Final", "Hard Rock Stadium", "Miami Gardens"],
+  ["Colombia", "Ghana", 4, "2026-07-04T01:30:00Z", "Dieciseisavos de Final", "Arrowhead Stadium", "Kansas City"],
+
+  // Octavos de final
+  ["Ganador Partido 73", "Ganador Partido 75", 5, "2026-07-04T17:00:00Z", "Octavos de Final", "NRG Stadium", "Houston"],
+  ["Ganador Partido 74", "Ganador Partido 77", 5, "2026-07-04T21:00:00Z", "Octavos de Final", "Lincoln Financial Field", "Filadelfia"],
+  ["Ganador Partido 76", "Ganador Partido 78", 5, "2026-07-05T20:00:00Z", "Octavos de Final", "MetLife Stadium", "East Rutherford"],
+  ["Ganador Partido 79", "Ganador Partido 80", 5, "2026-07-06T00:00:00Z", "Octavos de Final", "Estadio Azteca (Estadio Banorte)", "Ciudad de México"],
+  ["Ganador Partido 83", "Ganador Partido 84", 5, "2026-07-06T19:00:00Z", "Octavos de Final", "AT&T Stadium", "Arlington"],
+  ["Ganador Partido 81", "Ganador Partido 82", 5, "2026-07-07T00:00:00Z", "Octavos de Final", "Lumen Field", "Seattle"],
+  ["Ganador Partido 86", "Ganador Partido 88", 5, "2026-07-07T16:00:00Z", "Octavos de Final", "Mercedes-Benz Stadium", "Atlanta"],
+  ["Ganador Partido 85", "Ganador Partido 87", 5, "2026-07-07T20:00:00Z", "Octavos de Final", "BC Place", "Vancouver"],
+
+  // Cuartos de final
+  ["Ganador Partido 89", "Ganador Partido 90", 6, "2026-07-09T20:00:00Z", "Cuartos de Final", "Gillette Stadium", "Foxborough"],
+  ["Ganador Partido 93", "Ganador Partido 94", 6, "2026-07-10T19:00:00Z", "Cuartos de Final", "SoFi Stadium", "Inglewood"],
+  ["Ganador Partido 91", "Ganador Partido 92", 6, "2026-07-11T21:00:00Z", "Cuartos de Final", "Hard Rock Stadium", "Miami Gardens"],
+  ["Ganador Partido 95", "Ganador Partido 96", 6, "2026-07-12T01:00:00Z", "Cuartos de Final", "Arrowhead Stadium", "Kansas City"],
+
+  // Semifinales
+  ["Ganador Partido 97", "Ganador Partido 98", 7, "2026-07-14T19:00:00Z", "Semifinal", "AT&T Stadium", "Arlington"],
+  ["Ganador Partido 99", "Ganador Partido 100", 7, "2026-07-15T19:00:00Z", "Semifinal", "Mercedes-Benz Stadium", "Atlanta"],
+
+  // Tercer lugar y final
+  ["Perdedor Partido 101", "Perdedor Partido 102", 8, "2026-07-18T21:00:00Z", "Tercer Lugar", "Hard Rock Stadium", "Miami Gardens"],
+  ["Ganador Partido 101", "Ganador Partido 102", 8, "2026-07-19T19:00:00Z", "Final", "MetLife Stadium", "East Rutherford"],
+];
+
 // Normaliza la fecha: si viene solo el día, asigna las 19:00 UTC.
 function toISO(d) {
   return d.includes("T") ? d : `${d}T19:00:00Z`;
@@ -150,7 +197,7 @@ async function main() {
   }
   console.log(`  ✅ ${STADIUMS.length} sedes`);
 
-  console.log("Cargando los 72 partidos de la fase de grupos...");
+  console.log("Cargando los 104 partidos del Mundial 2026...");
   await sql`DELETE FROM quiniela.predictions`;
   await sql`DELETE FROM quiniela.matches`;
 
@@ -168,7 +215,19 @@ async function main() {
     }
     console.log(`  ✅ Grupo ${letter}: ${fixtures.length} partidos`);
   }
-  console.log(`\n🇲🇽 ¡Listo! ${total} partidos en 12 grupos cargados para el Mundial 2026.`);
+
+  for (const [home, away, jornada, date, stage, venue, city] of KNOCKOUTS) {
+    await sql`
+      INSERT INTO quiniela.matches
+        (jornada, home_team, away_team, match_date, stage, group_name, venue, city)
+      VALUES
+        (${jornada}, ${home}, ${away}, ${toISO(date)},
+         ${stage}, ${null}, ${venue}, ${city})
+    `;
+    total++;
+  }
+  console.log(`  ✅ Eliminatorias: ${KNOCKOUTS.length} partidos`);
+  console.log(`\n🇲🇽 ¡Listo! ${total} partidos cargados para el Mundial 2026.`);
 }
 
 main().catch((e) => {

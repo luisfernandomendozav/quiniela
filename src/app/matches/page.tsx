@@ -46,7 +46,7 @@ export default async function MatchesPage() {
     FROM quiniela.matches m
     LEFT JOIN quiniela.predictions p
       ON p.match_id = m.id AND p.user_id = ${user.id}
-    ORDER BY m.group_name ASC, m.jornada ASC, m.match_date ASC
+    ORDER BY m.match_date ASC, m.jornada ASC, m.group_name ASC NULLS LAST
   `) as MatchWithPred[];
 
   const activeJornada = await getActiveJornada();
@@ -76,9 +76,9 @@ export default async function MatchesPage() {
       <NavBar user={user} />
       <main className="max-w-4xl mx-auto px-4 pt-6 pb-24 md:pb-8">
         <PlayersStrip subtitle="Pronostica al Tri ⚽🇲🇽" />
-        <h1 className="text-xl font-bold mb-1">Fase de Grupos · Mundial 2026</h1>
+        <h1 className="text-xl font-bold mb-1">Mundial 2026 completo</h1>
         <p className="text-sm text-gray-500 mb-4">
-          72 partidos en 12 grupos. Solo puedes pronosticar la{" "}
+          104 partidos: fase de grupos y eliminatorias. Solo puedes pronosticar la{" "}
           <span className="font-semibold text-brand">jornada activa (J{activeJornada})</span>.
         </p>
         {predictionsLocked && (

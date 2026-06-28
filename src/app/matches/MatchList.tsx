@@ -40,10 +40,10 @@ export default function MatchList({
 
   const visible = filter === "all" ? matches : matches.filter((m) => m.jornada === filter);
 
-  // Agrupa por grupo (A-L)
-  const byGroup = visible.reduce<Record<string, MatchWithPred[]>>((acc, m) => {
-    const g = m.group_name ?? "?";
-    (acc[g] ||= []).push(m);
+  // Agrupa por grupo en fase de grupos y por etapa en eliminatorias.
+  const bySection = visible.reduce<Record<string, MatchWithPred[]>>((acc, m) => {
+    const section = m.group_name ? `Grupo ${m.group_name}` : m.stage ?? "Eliminatorias";
+    (acc[section] ||= []).push(m);
     return acc;
   }, {});
 
@@ -82,13 +82,17 @@ export default function MatchList({
       </div>
 
       <div className="space-y-8">
-      {Object.keys(byGroup).length === 0 && (
+      {Object.keys(bySection).length === 0 && (
         <p className="text-gray-500">No hay partidos en esta jornada.</p>
       )}
-      {Object.keys(byGroup)
-        .sort()
-        .map((g) => {
-          const games = byGroup[g];
+      {Object.keys(bySection)
+        .sort((a, b) => {
+          const firstA = bySection[a][0];
+          const firstB = bySection[b][0];
+          return new Date(firstA.match_date).getTime() - new Date(firstB.match_date).getTime();
+        })
+        .map((section) => {
+          const games = bySection[section];
           const hasMexico = games.some(
             (m) => isMexico(m.home_team) || isMexico(m.away_team)
           );
@@ -97,7 +101,7 @@ export default function MatchList({
             new Set(games.flatMap((m) => [m.home_team, m.away_team]))
           );
           return (
-            <section key={g} id={`grupo-${g}`}>
+            <section key={section} id={`seccion-${section.toLowerCase().replace(/\s+/g, "-")}`}>
               <div
                 className={`flex items-center gap-2 mb-3 pb-2 border-b ${
                   hasMexico ? "border-brand" : "border-gray-200"
@@ -108,7 +112,7 @@ export default function MatchList({
                     hasMexico ? "text-brand" : "text-gray-700"
                   }`}
                 >
-                  Grupo {g}
+                  {section}
                 </h2>
                 {hasMexico && (
                   <span className="text-[10px] uppercase tracking-wide bg-brand text-white rounded-full px-2 py-0.5">
