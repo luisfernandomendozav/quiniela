@@ -23,3 +23,37 @@ body {
     padding-bottom: max(env(safe-area-inset-bottom), 0px);
   }
 }
+
+/* ---- Mascota animada (Pet) ---- */
+@keyframes petFloat {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-6px); }
+}
+@keyframes petHop {
+  0% { transform: translateY(0) scale(1, 1); }
+  30% { transform: translateY(-22px) scale(0.92, 1.1); }
+  60% { transform: translateY(0) scale(1.08, 0.9); }
+  100% { transform: translateY(0) scale(1, 1); }
+}
+@keyframes petPop {
+  0% { transform: translate(-50%, 6px) scale(0.7); opacity: 0; }
+  100% { transform: translate(-50%, 0) scale(1); opacity: 1; }
+}
+.pet-float { animation: petFloat 2.2s ease-in-out infinite; }
+.pet-hop { animation: petHop 0.6s ease-out; }
+.pet-bubble { animation: petPop 0.18s ease-out; }
+.pet-shadow { animation: petFloat 2.2s ease-in-out infinite reverse; }
+
+/* Pet: mordida al comer y rebote de la comida */
+@keyframes petChomp {
+  0% { transform: scale(1, 1); }
+  25% { transform: scale(1.15, 0.88); }
+  55% { transform: scale(0.9, 1.12); }
+  100% { transform: scale(1, 1); }
+}
+@keyframes foodBob {
+  0%, 100% { transform: translateY(0) rotate(-10deg); }
+  50% { transform: translateY(-9px) rotate(10deg); }
+}
+.pet-chomp { animation: petChomp 0.45s ease-out; }
+.food-bob { animation: foodBob 0.7s ease-in-out infinite; }

@@ -96,6 +96,9 @@ export default function MatchList({
           const hasMexico = games.some(
             (m) => isMexico(m.home_team) || isMexico(m.away_team)
           );
+          // En eliminatorias (sin grupo) son muchas selecciones: no apretujamos
+          // banderitas en el encabezado; el cuadro completo vive en /bracket.
+          const isKnockout = games[0]?.group_name == null;
           // Equipos del grupo (orden de aparición)
           const teams = Array.from(
             new Set(games.flatMap((m) => [m.home_team, m.away_team]))
@@ -119,11 +122,20 @@ export default function MatchList({
                     El Tri 🇲🇽
                   </span>
                 )}
-                <span className="ml-auto flex items-center gap-1">
-                  {teams.map((t) => (
-                    <Flag key={t} team={t} className="h-3.5 w-5" />
-                  ))}
-                </span>
+                {isKnockout ? (
+                  <a
+                    href="/bracket"
+                    className="ml-auto text-xs font-medium text-brand hover:underline whitespace-nowrap"
+                  >
+                    🗺️ Ver mapa
+                  </a>
+                ) : (
+                  <span className="ml-auto flex items-center gap-1">
+                    {teams.map((t) => (
+                      <Flag key={t} team={t} className="h-3.5 w-5" />
+                    ))}
+                  </span>
+                )}
               </div>
               <div className="space-y-3">
                 {games.map((m) => (

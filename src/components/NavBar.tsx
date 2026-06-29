@@ -10,6 +10,7 @@ type Item = { href: string; label: string; icon: string };
 const BASE_ITEMS: Item[] = [
   { href: "/dashboard", label: "Inicio", icon: "🏠" },
   { href: "/matches", label: "Partidos", icon: "⚽" },
+  { href: "/bracket", label: "Bracket", icon: "🗺️" },
   { href: "/leaderboard", label: "Tabla", icon: "🏆" },
   { href: "/plantilla", label: "Plantilla", icon: "👕" },
   { href: "/sedes", label: "Sedes", icon: "🏟️" },

@@ -6,6 +6,20 @@ import type { MatchWithPred } from "./page";
 import { isMexico } from "@/lib/teams";
 import Flag from "@/components/Flag";
 
+// Frases cómicas del pet mientras el usuario captura en modo rápido
+const HECKLES = [
+  "¿Estás seguro de eso? 🤨",
+  "Mmm... ¿neta ese marcador? 🤔",
+  "Yo que tú lo pensaba 👀",
+  "Uff, qué arriesgado 🫣",
+  "Confía en mí... cámbialo 😏",
+  "Ni tú te la crees 😆",
+  "Va a estar difícil eh 🤡",
+  "¿Seguro seguro? 🧐",
+  "Ay, valiente 😎",
+  "Eso suena a regalar puntos 🎁",
+];
+
 // Modo rápido estilo TikTok: una tarjeta a pantalla completa por partido,
 // se avanza deslizando hacia arriba (scroll-snap vertical).
 export default function SwipeMode({
@@ -21,6 +35,19 @@ export default function SwipeMode({
   const [savedIds, setSavedIds] = useState<Set<number>>(
     () => new Set(matches.filter((m) => m.pred_home != null).map((m) => m.id))
   );
+
+  // El pet "vigila" y comenta de forma cómica lo que pones
+  const [heckle, setHeckle] = useState<string | null>(null);
+  const lastHeckle = useRef(0);
+  const heckleTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
+  function poke() {
+    const now = Date.now();
+    if (now - lastHeckle.current < 1300) return; // no spamear
+    lastHeckle.current = now;
+    setHeckle(HECKLES[Math.floor(Math.random() * HECKLES.length)]);
+    if (heckleTimer.current) clearTimeout(heckleTimer.current);
+    heckleTimer.current = setTimeout(() => setHeckle(null), 2300);
+  }
 
   const total = matches.length;
 
@@ -85,12 +112,31 @@ export default function SwipeMode({
             match={m}
             showHint={i === 0 && index === 0}
             saved={savedIds.has(m.id)}
+            onPoke={poke}
             onSaved={() => {
               setSavedIds((prev) => new Set(prev).add(m.id));
               scrollToNext(i);
             }}
           />
         ))}
+
+        {/* Pet vigilante en la esquina (solo mientras hay partidos por capturar) */}
+        {index < total && (
+          <div className="fixed left-3 bottom-5 z-20 pointer-events-none flex items-end gap-2">
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img
+              src="/pet.png"
+              alt=""
+              className={`w-16 object-contain ${heckle ? "pet-hop" : "pet-float"}`}
+              style={{ filter: "drop-shadow(0 3px 4px rgba(0,0,0,0.5))" }}
+            />
+            {heckle && (
+              <div className="pet-bubble mb-10 max-w-[55vw] rounded-2xl bg-white text-gray-900 text-xs font-semibold px-3 py-1.5 shadow-lg">
+                {heckle}
+              </div>
+            )}
+          </div>
+        )}
 
         {/* Tarjeta final */}
         <div className="h-full snap-start flex flex-col items-center justify-center gap-4 px-8 text-center">
@@ -118,11 +164,13 @@ function SwipeCard({
   saved,
   showHint,
   onSaved,
+  onPoke,
 }: {
   match: MatchWithPred;
   saved: boolean;
   showHint: boolean;
   onSaved: () => void;
+  onPoke: () => void;
 }) {
   const [home, setHome] = useState(match.pred_home ?? 0);
   const [away, setAway] = useState(match.pred_away ?? 0);
@@ -132,6 +180,7 @@ function SwipeCard({
   const mexicoMatch = isMexico(match.home_team) || isMexico(match.away_team);
 
   async function save() {
+    onPoke();
     setSaving(true);
     setErr("");
     const res = await fetch("/api/predictions", {
@@ -174,9 +223,9 @@ function SwipeCard({
         {match.venue && <span className="block mt-0.5">📍 {match.venue}</span>}
       </div>
 
-      <TeamScore team={match.home_team} value={home} onChange={setHome} />
+      <TeamScore team={match.home_team} value={home} onChange={setHome} onPoke={onPoke} />
       <span className="text-white/30 font-bold text-sm tracking-widest">VS</span>
-      <TeamScore team={match.away_team} value={away} onChange={setAway} />
+      <TeamScore team={match.away_team} value={away} onChange={setAway} onPoke={onPoke} />
 
       <div className="h-14 flex flex-col items-center justify-center">
         <button
@@ -217,10 +266,12 @@ function TeamScore({
   team,
   value,
   onChange,
+  onPoke,
 }: {
   team: string;
   value: number;
   onChange: (v: number) => void;
+  onPoke: () => void;
 }) {
   return (
     <div className="w-full max-w-xs flex flex-col items-center gap-3">
@@ -230,7 +281,10 @@ function TeamScore({
       </div>
       <div className="flex items-center gap-6">
         <button
-          onClick={() => onChange(Math.max(0, value - 1))}
+          onClick={() => {
+            onChange(Math.max(0, value - 1));
+            onPoke();
+          }}
           aria-label={`Menos goles para ${team}`}
           className="w-14 h-14 rounded-full bg-white/10 hover:bg-white/20 active:scale-90 text-3xl font-bold transition"
         >
@@ -238,7 +292,10 @@ function TeamScore({
         </button>
         <span className="text-6xl font-black tabular-nums w-20 text-center">{value}</span>
         <button
-          onClick={() => onChange(value + 1)}
+          onClick={() => {
+            onChange(value + 1);
+            onPoke();
+          }}
           aria-label={`Más goles para ${team}`}
           className="w-14 h-14 rounded-full bg-white/10 hover:bg-white/20 active:scale-90 text-3xl font-bold transition"
         >
