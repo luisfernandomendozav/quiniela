@@ -10,16 +10,19 @@ export async function POST(req: NextRequest, { params }: { params: { id: string 
   if (!user?.is_admin) return NextResponse.json({ error: "No autorizado" }, { status: 403 });
 
   const matchId = Number(params.id);
-  const { homeScore, awayScore } = await req.json();
+  const { homeScore, awayScore, penWinner } = await req.json();
   const hs = Number(homeScore);
   const as = Number(awayScore);
   if (!Number.isInteger(hs) || !Number.isInteger(as) || hs < 0 || as < 0) {
     return NextResponse.json({ error: "Marcador inválido" }, { status: 400 });
   }
+  // Ganador por penales: solo aplica si el marcador quedó empatado (eliminatorias).
+  // Si no es empate, se ignora (queda null).
+  const pen = hs === as && (penWinner === "home" || penWinner === "away") ? penWinner : null;
 
   await sql`
     UPDATE quiniela.matches
-    SET home_score = ${hs}, away_score = ${as}, status = 'finished'
+    SET home_score = ${hs}, away_score = ${as}, status = 'finished', pen_winner = ${pen}
     WHERE id = ${matchId}
   `;
 

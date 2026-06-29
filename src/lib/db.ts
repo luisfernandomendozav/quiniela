@@ -27,6 +27,7 @@ export type Match = {
   group_name: string | null;
   venue: string | null;
   city: string | null;
+  pen_winner: "home" | "away" | null;
 };
 
 export type Stadium = {

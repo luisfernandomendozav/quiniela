@@ -221,14 +221,24 @@ function ResultRow({ match, onDelete }: { match: Match; onDelete: () => void }) 
   const router = useRouter();
   const [hs, setHs] = useState(match.home_score?.toString() ?? "");
   const [as, setAs] = useState(match.away_score?.toString() ?? "");
+  const [penWinner, setPenWinner] = useState<"home" | "away" | null>(match.pen_winner);
   const [saving, setSaving] = useState(false);
+
+  // En eliminatorias (sin grupo) un empate se define por penales.
+  const isKnockout = match.group_name == null;
+  const isDraw = hs !== "" && as !== "" && Number(hs) === Number(as);
+  const needsPen = isKnockout && isDraw;
 
   async function saveResult() {
     setSaving(true);
     await fetch(`/api/matches/${match.id}/result`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ homeScore: Number(hs), awayScore: Number(as) }),
+      body: JSON.stringify({
+        homeScore: Number(hs),
+        awayScore: Number(as),
+        penWinner: needsPen ? penWinner : null,
+      }),
     });
     setSaving(false);
     router.refresh();
@@ -267,7 +277,7 @@ function ResultRow({ match, onDelete }: { match: Match; onDelete: () => void }) 
       </div>
       <button
         onClick={saveResult}
-        disabled={saving || hs === "" || as === ""}
+        disabled={saving || hs === "" || as === "" || (needsPen && !penWinner)}
         className="bg-brand hover:bg-brand-dark text-white text-sm rounded-lg px-3 py-1.5 disabled:opacity-50"
       >
         {saving ? "..." : "Resultado"}
@@ -276,6 +286,32 @@ function ResultRow({ match, onDelete }: { match: Match; onDelete: () => void }) 
       <button onClick={onDelete} className="text-red-500 text-sm hover:underline">
         Eliminar
       </button>
+
+      {/* Empate en eliminatoria → ¿quién pasó en penales? */}
+      {needsPen && (
+        <div className="basis-full flex flex-wrap items-center gap-2 mt-1 pt-2 border-t border-gray-100">
+          <span className="text-xs text-gray-500">🥅 Penales — pasó:</span>
+          {(["home", "away"] as const).map((side) => {
+            const team = side === "home" ? match.home_team : match.away_team;
+            const active = penWinner === side;
+            return (
+              <button
+                key={side}
+                type="button"
+                onClick={() => setPenWinner(side)}
+                className={`text-xs rounded-full px-3 py-1 border transition ${
+                  active
+                    ? "bg-brand text-white border-brand"
+                    : "bg-white text-gray-600 border-gray-300 hover:border-brand"
+                }`}
+              >
+                {team}
+              </button>
+            );
+          })}
+          {!penWinner && <span className="text-xs text-mxred">elige quién avanzó</span>}
+        </div>
+      )}
     </div>
   );
 }

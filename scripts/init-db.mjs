@@ -54,6 +54,9 @@ async function main() {
   await sql`ALTER TABLE quiniela.matches ADD COLUMN IF NOT EXISTS group_name TEXT`;
   await sql`ALTER TABLE quiniela.matches ADD COLUMN IF NOT EXISTS venue      TEXT`;
   await sql`ALTER TABLE quiniela.matches ADD COLUMN IF NOT EXISTS city       TEXT`;
+  // Ganador por penales en eliminatorias si el marcador queda empatado:
+  // 'home' | 'away' | null.
+  await sql`ALTER TABLE quiniela.matches ADD COLUMN IF NOT EXISTS pen_winner TEXT`;
 
   // Configuración global (clave-valor). Ej: active_jornada = la jornada abierta.
   await sql`

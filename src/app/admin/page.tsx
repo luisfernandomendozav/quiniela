@@ -13,7 +13,8 @@ export default async function AdminPage() {
   if (!user.is_admin) redirect("/dashboard");
 
   const matches = (await sql`
-    SELECT id, jornada, home_team, away_team, match_date, home_score, away_score, status
+    SELECT id, jornada, home_team, away_team, match_date, home_score, away_score, status,
+           stage, group_name, venue, city, pen_winner
     FROM quiniela.matches
     ORDER BY match_date DESC
   `) as Match[];

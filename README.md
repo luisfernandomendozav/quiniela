@@ -20,6 +20,22 @@ Las variables están en `.env`:
 - `DATABASE_URL` — conexión Neon (la misma del proyecto `ai-crm`). Todas las tablas viven en el schema dedicado **`quiniela`**, así que no interfieren con las tablas del CRM.
 - `SESSION_SECRET` — secreto para firmar las cookies de sesión (cámbialo en producción).
 - `ADMIN_EMAILS` — correos que reciben rol admin automáticamente al registrarse (separados por coma).
+- `FOOTBALL_DATA_TOKEN` — *(opcional)* API key gratuita de [football-data.org](https://www.football-data.org/client/register) para sincronizar resultados reales del Mundial.
+- `CRON_SECRET` — *(opcional)* secreto para proteger el endpoint de sincronización; Vercel Cron lo envía automáticamente.
+
+## Sincronización automática de resultados
+
+Un **Vercel Cron** (`vercel.json`) llama 1 vez al día a `/api/cron/sync-resultados`, que
+consulta football-data.org, busca los partidos terminados y registra el marcador
+(recalculando puntos). Solo rellena partidos **pendientes**; nunca pisa un resultado ya puesto.
+
+- La **fase de grupos** se empareja por nombre real; las **eliminatorias** (con apodos) por
+  posición en el cuadro (orden por fecha = P73..P88). Ver `src/lib/worldcup.ts` y `src/lib/bracket.ts`.
+- **Setup en Vercel:** agrega `FOOTBALL_DATA_TOKEN` y `CRON_SECRET` en *Settings → Environment Variables* y redeploya.
+- **Probar el mapeo sin escribir:** `GET /api/cron/sync-resultados?key=<CRON_SECRET>&dryRun=1`
+  (devuelve qué actualizaría y los `unmatched` que no logró emparejar).
+- **Frecuencia:** por defecto `0 18 * * *` (1 vez al día, compatible con el plan **Hobby**).
+  Con plan **Pro** puedes subirla, p. ej. `*/30 * * * *` (cada 30 min).
 
 ## Puesta en marcha
 

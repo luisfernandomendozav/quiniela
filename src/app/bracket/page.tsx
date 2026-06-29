@@ -15,7 +15,7 @@ export default async function BracketPage() {
   // coincide con el del cuadro oficial (P73..P88), así mapeamos cada uno a su
   // posición real. Ver src/lib/bracket.ts.
   const rows = (await sql`
-    SELECT id, home_team, away_team, home_score, away_score, status
+    SELECT id, home_team, away_team, home_score, away_score, status, pen_winner
     FROM quiniela.matches
     WHERE jornada = 4
     ORDER BY match_date ASC, id ASC
@@ -26,6 +26,7 @@ export default async function BracketPage() {
     home_score: number | null;
     away_score: number | null;
     status: string;
+    pen_winner: "home" | "away" | null;
   }[];
 
   // Indexado por posición canónica (0..15 = P73..P88).
@@ -36,6 +37,7 @@ export default async function BracketPage() {
     homeScore: m.home_score,
     awayScore: m.away_score,
     status: m.status,
+    penWinner: m.pen_winner,
   }));
 
   const bracket = buildBracket(r32);

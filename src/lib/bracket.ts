@@ -75,6 +75,7 @@ export type R32Result = {
   homeScore: number | null;
   awayScore: number | null;
   status: string;
+  penWinner: "home" | "away" | null; // quién pasó si fue empate (penales)
 };
 
 export type Slot = {
@@ -106,7 +107,10 @@ function winnerSide(r: R32Result | undefined): 0 | 1 | null {
   if (!r || r.status !== "finished" || r.homeScore == null || r.awayScore == null) return null;
   if (r.homeScore > r.awayScore) return 0;
   if (r.awayScore > r.homeScore) return 1;
-  return null; // empate: en eliminatorias se resuelve por penales; sin dato lo dejamos abierto
+  // Empate: lo define quién pasó en penales (si el admin lo capturó).
+  if (r.penWinner === "home") return 0;
+  if (r.penWinner === "away") return 1;
+  return null; // empate sin definir aún
 }
 
 // Construye el cuadro radial a partir de los 16 resultados de dieciseisavos.
