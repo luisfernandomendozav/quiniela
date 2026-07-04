@@ -109,14 +109,28 @@ export async function fetchWorldCupMatches(
     throw new Error(`football-data ${res.status}: ${await res.text().catch(() => "")}`);
   }
   const data = (await res.json()) as { matches?: any[] };
-  return (data.matches ?? []).map((m) => ({
-    utcDate: m.utcDate,
-    status: m.status,
-    stage: m.stage,
-    homeName: m.homeTeam?.name ?? "",
-    awayName: m.awayTeam?.name ?? "",
-    homeScore: m.score?.fullTime?.home ?? null,
-    awayScore: m.score?.fullTime?.away ?? null,
-    winner: m.score?.winner ?? null,
-  }));
+  return (data.matches ?? []).map((m) => {
+    const sc = m.score ?? {};
+    // Ojo: en partidos por penales, `fullTime` SUMA los penales (ej. 3-4).
+    // El marcador "de fútbol" es reglamentario + alargue, sin penales.
+    let home: number | null;
+    let away: number | null;
+    if (sc.duration === "PENALTY_SHOOTOUT" && sc.regularTime) {
+      home = (sc.regularTime.home ?? 0) + (sc.extraTime?.home ?? 0);
+      away = (sc.regularTime.away ?? 0) + (sc.extraTime?.away ?? 0);
+    } else {
+      home = sc.fullTime?.home ?? null;
+      away = sc.fullTime?.away ?? null;
+    }
+    return {
+      utcDate: m.utcDate,
+      status: m.status,
+      stage: m.stage,
+      homeName: m.homeTeam?.name ?? "",
+      awayName: m.awayTeam?.name ?? "",
+      homeScore: home,
+      awayScore: away,
+      winner: sc.winner ?? null,
+    };
+  });
 }
