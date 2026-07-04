@@ -1,7 +1,7 @@
 {
   "crons": [
     {
-      "path": "/api/cron/sync-resultados",
+      "path": "/api/cron/sync-resultados?key=cron-4037e2c91a938c1e2f9ca8f0",
       "schedule": "0 18 * * *"
     }
   ]

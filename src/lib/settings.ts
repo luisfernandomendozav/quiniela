@@ -1,5 +1,15 @@
 import { sql } from "./db";
 
+// Lee un valor cualquiera de la tabla settings (o null si no existe).
+// Se usa, p. ej., para guardar el token de football-data y el secreto del cron
+// sin depender de variables de entorno de Vercel.
+export async function getSetting(key: string): Promise<string | null> {
+  const rows = (await sql`
+    SELECT value FROM quiniela.settings WHERE key = ${key}
+  `) as { value: string }[];
+  return rows[0]?.value ?? null;
+}
+
 // Jornada actualmente abierta para pronosticar (la controla el admin).
 export async function getActiveJornada(): Promise<number> {
   const rows = (await sql`

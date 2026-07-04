@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { sql } from "@/lib/db";
 import { computePoints } from "@/lib/points";
 import { fetchWorldCupMatches, toCanonKey } from "@/lib/worldcup";
+import { getSetting } from "@/lib/settings";
 
 export const dynamic = "force-dynamic";
 
@@ -15,15 +16,17 @@ export const dynamic = "force-dynamic";
 //
 // Prueba manual:  /api/cron/sync-resultados?key=<CRON_SECRET>&dryRun=1
 export async function GET(req: NextRequest) {
+  // El secreto y el token pueden venir de env (Vercel) o de la tabla settings
+  // (para setups sin acceso a env vars de Vercel).
+  const secret = process.env.CRON_SECRET || (await getSetting("cron_secret"));
   const auth = req.headers.get("authorization");
   const key = req.nextUrl.searchParams.get("key");
-  const secret = process.env.CRON_SECRET;
   const ok = secret && (auth === `Bearer ${secret}` || key === secret);
   if (!ok) return NextResponse.json({ error: "No autorizado" }, { status: 401 });
 
-  const token = process.env.FOOTBALL_DATA_TOKEN;
+  const token = process.env.FOOTBALL_DATA_TOKEN || (await getSetting("football_data_token"));
   if (!token) {
-    return NextResponse.json({ error: "Falta FOOTBALL_DATA_TOKEN" }, { status: 500 });
+    return NextResponse.json({ error: "Falta football_data_token" }, { status: 500 });
   }
   const dryRun = req.nextUrl.searchParams.get("dryRun") === "1";
 
