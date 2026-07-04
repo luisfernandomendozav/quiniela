@@ -29,8 +29,9 @@ Un **Vercel Cron** (`vercel.json`) llama 1 vez al día a `/api/cron/sync-resulta
 consulta football-data.org, busca los partidos terminados y registra el marcador
 (recalculando puntos). Solo rellena partidos **pendientes**; nunca pisa un resultado ya puesto.
 
-- La **fase de grupos** se empareja por nombre real; las **eliminatorias** (con apodos) por
-  posición en el cuadro (orden por fecha = P73..P88). Ver `src/lib/worldcup.ts` y `src/lib/bracket.ts`.
+- Empareja cada partido por **nombre real** de las selecciones (todas las rondas). En
+  eliminatorias, si el tiempo reglamentario quedó empatado, define `pen_winner` con el ganador
+  (penales). Ver `src/lib/worldcup.ts`.
 - **Setup en Vercel:** agrega `FOOTBALL_DATA_TOKEN` y `CRON_SECRET` en *Settings → Environment Variables* y redeploya.
 - **Probar el mapeo sin escribir:** `GET /api/cron/sync-resultados?key=<CRON_SECRET>&dryRun=1`
   (devuelve qué actualizaría y los `unmatched` que no logró emparejar).

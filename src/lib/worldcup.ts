@@ -13,9 +13,9 @@ export type ApiMatch = {
   stage: string;
   homeName: string;
   awayName: string;
-  homeTla: string | null;
-  homeScore: number | null;
+  homeScore: number | null; // marcador final (tras alargue si lo hubo)
   awayScore: number | null;
+  winner: "HOME_TEAM" | "AWAY_TEAM" | "DRAW" | null; // ganador total (incluye penales)
 };
 
 // Nombre del proveedor (inglés) -> nombre canónico en español (como en la BD).
@@ -115,8 +115,8 @@ export async function fetchWorldCupMatches(
     stage: m.stage,
     homeName: m.homeTeam?.name ?? "",
     awayName: m.awayTeam?.name ?? "",
-    homeTla: m.homeTeam?.tla ?? null,
     homeScore: m.score?.fullTime?.home ?? null,
     awayScore: m.score?.fullTime?.away ?? null,
+    winner: m.score?.winner ?? null,
   }));
 }
