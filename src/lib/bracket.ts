@@ -64,9 +64,11 @@ export const TEAM_CODE: Record<string, string> = {
 };
 
 // Orden angular de los 16 dieciseisavos (recorrido in-order del árbol), como
-// índices 0..15 donde índice = (nº de partido − 73). Garantiza que cada par de
-// partidos adyacentes comparte un padre, así el cuadro anida 2:1 sin cruces.
-export const R32_ANGULAR_ORDER = [0, 2, 1, 4, 10, 11, 8, 9, 3, 5, 6, 7, 13, 15, 12, 14];
+// índices 0..15 donde índice = (nº de partido − 73). Refleja el CUADRO REAL del
+// Mundial 2026 (verificado con los cruces oficiales de octavos → cuartos → semis),
+// de modo que cada par adyacente comparte partido y el cuadro anida 2:1 sin cruces.
+// Cruces reales: R16 = (73,76)(75,78)(84,83)(82,81)(74,77)(79,80)(87,86)(85,88).
+export const R32_ANGULAR_ORDER = [0, 3, 2, 5, 11, 10, 9, 8, 1, 4, 6, 7, 14, 13, 12, 15];
 
 export type R32Result = {
   id: number;
@@ -92,6 +94,35 @@ export type Bracket = {
   roundNames: string[]; // nombre de cada nivel + campeón al final
 };
 
+// Partido de una ronda posterior (octavos en adelante), con nombres reales.
+export type KoMatch = {
+  jornada: number; // 5=octavos, 6=cuartos, 7=semis, 8=final
+  home: string;
+  away: string;
+  homeScore: number | null;
+  awayScore: number | null;
+  status: string;
+  penWinner: "home" | "away" | null;
+};
+
+function nameKey(s: string): string {
+  return s
+    .normalize("NFD")
+    .replace(/[̀-ͯ]/g, "")
+    .toLowerCase()
+    .replace(/[^a-z0-9]/g, "");
+}
+
+// Equipo ganador (nombre real) de un partido de eliminación, o null si no está definido.
+function koWinnerName(m: KoMatch): string | null {
+  if (m.status !== "finished" || m.homeScore == null || m.awayScore == null) return null;
+  if (m.homeScore > m.awayScore) return m.home;
+  if (m.awayScore > m.homeScore) return m.away;
+  if (m.penWinner === "home") return m.home;
+  if (m.penWinner === "away") return m.away;
+  return null;
+}
+
 function makeSlot(label: string, flagTeam: string, decided: boolean): Slot {
   return {
     label,
@@ -113,10 +144,19 @@ function winnerSide(r: R32Result | undefined): 0 | 1 | null {
   return null; // empate sin definir aún
 }
 
-// Construye el cuadro radial a partir de los 16 resultados de dieciseisavos.
-// `r32` debe venir indexado por posición canónica (0..15 = P73..P88).
-export function buildBracket(r32: (R32Result | undefined)[]): Bracket {
+// Construye el cuadro radial. `r32` = 16 dieciseisavos indexados por posición
+// canónica (0..15 = P73..P88). `later` = partidos de octavos en adelante (con
+// nombres reales), que llenan los anillos internos emparejando por nombre.
+export function buildBracket(r32: (R32Result | undefined)[], later: KoMatch[] = []): Bracket {
   const order = R32_ANGULAR_ORDER;
+
+  // Equipos hoja (32) en orden angular, para saber qué selecciones caen en cada anillo.
+  const leaf: string[] = [];
+  for (const i of order) {
+    const [h, a] = R32_CANONICAL[i];
+    leaf.push(h, a);
+  }
+  const leafKey = leaf.map(nameKey);
 
   // Nivel 0: 32 equipos (2 por partido) en orden angular.
   const teams: Slot[] = [];
@@ -138,14 +178,29 @@ export function buildBracket(r32: (R32Result | undefined)[]): Bracket {
     return makeSlot(label, canon, true);
   });
 
-  // Niveles 2-4 (octavos, cuartos, semis): aún sin partidos en BD → por definir.
-  const eights: Slot[] = Array(8).fill(null);
-  const fours: Slot[] = Array(4).fill(null);
-  const twos: Slot[] = Array(2).fill(null);
+  // Anillos internos: cada slot cubre un tramo de equipos hoja; se empareja el
+  // partido de esa ronda cuyos dos equipos caen dentro de ese tramo.
+  function fillRing(nSlots: number, jornada: number): Slot[] {
+    const per = 32 / nSlots;
+    return Array.from({ length: nSlots }, (_, j) => {
+      const cands = new Set(leafKey.slice(j * per, (j + 1) * per));
+      const m = later.find(
+        (x) => x.jornada === jornada && cands.has(nameKey(x.home)) && cands.has(nameKey(x.away))
+      );
+      if (!m) return null;
+      const w = koWinnerName(m);
+      return w ? makeSlot(w, w, true) : null;
+    });
+  }
+
+  const eights = fillRing(8, 5); // octavos → participantes de cuartos
+  const fours = fillRing(4, 6); // cuartos → semifinalistas
+  const twos = fillRing(2, 7); // semis → finalistas
+  const champion = fillRing(1, 8)[0]; // final → campeón
 
   return {
     levels: [teams, r16, eights, fours, twos],
-    champion: null,
+    champion,
     roundNames: ["Dieciseisavos", "Octavos", "Cuartos", "Semifinal", "Final", "Campeón"],
   };
 }

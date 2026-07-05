@@ -2,7 +2,7 @@ import { redirect } from "next/navigation";
 import { getCurrentUser } from "@/lib/auth";
 import { sql } from "@/lib/db";
 import NavBar from "@/components/NavBar";
-import { buildBracket, type R32Result } from "@/lib/bracket";
+import { buildBracket, type R32Result, type KoMatch } from "@/lib/bracket";
 import BracketMap from "./BracketMap";
 
 export const dynamic = "force-dynamic";
@@ -40,7 +40,31 @@ export default async function BracketPage() {
     penWinner: m.pen_winner,
   }));
 
-  const bracket = buildBracket(r32);
+  // Rondas posteriores (octavos en adelante): nombres reales, se emparejan por nombre.
+  const laterRows = (await sql`
+    SELECT jornada, home_team, away_team, home_score, away_score, status, pen_winner
+    FROM quiniela.matches
+    WHERE jornada >= 5
+  `) as {
+    jornada: number;
+    home_team: string;
+    away_team: string;
+    home_score: number | null;
+    away_score: number | null;
+    status: string;
+    pen_winner: "home" | "away" | null;
+  }[];
+  const later: KoMatch[] = laterRows.map((m) => ({
+    jornada: m.jornada,
+    home: m.home_team.trim(),
+    away: m.away_team.trim(),
+    homeScore: m.home_score,
+    awayScore: m.away_score,
+    status: m.status,
+    penWinner: m.pen_winner,
+  }));
+
+  const bracket = buildBracket(r32, later);
   const played = r32.filter((r) => r && r.status === "finished").length;
 
   return (
