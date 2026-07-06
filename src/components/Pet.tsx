@@ -13,22 +13,30 @@ const CHASE = 135; // velocidad al perseguir comida (px/s)
 const FLEE = 80; // la comida huye (px/s)
 const BOTTOM = 96; // separación del fondo (deja libre la barra inferior móvil)
 
-const PHRASES = [
-  "¡Vamos México! 🇲🇽",
-  "¿Ya hiciste tu quiniela?",
-  "Yo le voy al Tri ⚽",
-  "¡Pronostica ya! 🔥",
-  "¿Quién será campeón? 🏆",
-  "¡Échale ganas! 💪",
-  "No olvides la jornada 👀",
-];
+// Al hacerle clic es como pegarle: se queja y le salen moretones 😅
+const PAIN_PHRASES = ["¡Auch! 😖", "¡Ya bájale! 😵", "¡Me duele! 🤕", "¡No! 😩", "¡Ouch! 💢", "¡Ya wey! 😭"];
 const EAT_PHRASES = ["¡Ñam ñam! 🤤", "¡Qué rico! 😋", "¡Mío! 🍴", "¡A comer! 🤩"];
 const FOODS = ["🍔", "🌮", "🍕", "🌭", "🍟", "🥤", "🍗", "🌯"];
+
+// Posiciones de los moretones sobre la silueta (fracción de W×H). Van apareciendo
+// uno por uno con cada golpe; se curan solos si lo dejas en paz.
+const BRUISES: { x: number; y: number; s: number }[] = [
+  { x: 0.44, y: 0.20, s: 15 },
+  { x: 0.60, y: 0.26, s: 13 },
+  { x: 0.34, y: 0.32, s: 17 },
+  { x: 0.56, y: 0.42, s: 20 },
+  { x: 0.30, y: 0.52, s: 15 },
+  { x: 0.68, y: 0.47, s: 14 },
+  { x: 0.48, y: 0.63, s: 21 },
+  { x: 0.62, y: 0.14, s: 12 },
+];
+const MAX_BRUISES = BRUISES.length;
 
 export default function Pet() {
   const [x, setX] = useState(40);
   const [dir, setDir] = useState<1 | -1>(1);
-  const [hopping, setHopping] = useState(false);
+  const [shaking, setShaking] = useState(false); // sacudida al pegarle
+  const [hits, setHits] = useState(0); // moretones acumulados
   const [eating, setEating] = useState(false);
   const [paused, setPaused] = useState(false);
   const [msg, setMsg] = useState<string | null>(null);
@@ -151,16 +159,24 @@ export default function Pet() {
   }, []);
 
   function say(phrase: string, ms = 2600) {
-    setHopping(true);
-    setTimeout(() => setHopping(false), 600);
     setMsg(phrase);
     if (msgTimer.current) clearTimeout(msgTimer.current);
     msgTimer.current = setTimeout(() => setMsg(null), ms);
   }
 
-  function react() {
-    say(PHRASES[Math.floor(Math.random() * PHRASES.length)]);
+  // Cada clic = un golpe: se sacude, se queja y le sale un moretón más.
+  function hitPet() {
+    setHits((h) => Math.min(h + 1, MAX_BRUISES));
+    setShaking(true);
+    setTimeout(() => setShaking(false), 400);
+    say(PAIN_PHRASES[Math.floor(Math.random() * PAIN_PHRASES.length)], 1600);
   }
+
+  // Se cura solo: cada 8 s se le quita un moretón si lo dejas en paz.
+  useEffect(() => {
+    const t = setInterval(() => setHits((h) => (h > 0 ? h - 1 : 0)), 8000);
+    return () => clearInterval(t);
+  }, []);
 
   // Otros componentes (p. ej. el modo rápido) pueden hacerlo hablar:
   //   window.dispatchEvent(new CustomEvent("pet:say", { detail: "texto" }))
@@ -204,12 +220,12 @@ export default function Pet() {
     } else {
       clickTimer.current = setTimeout(() => {
         clickTimer.current = null;
-        react();
+        hitPet();
       }, 250);
     }
   }
 
-  const bodyAnim = hopping ? "pet-hop" : eating ? "pet-chomp" : "pet-float";
+  const bodyAnim = shaking ? "pet-hit" : eating ? "pet-chomp" : "pet-float";
 
   // Escondido: solo una pestañita para traerlo de vuelta
   if (hidden) {
@@ -276,19 +292,38 @@ export default function Pet() {
                 🐹
               </div>
             ) : (
-              // eslint-disable-next-line @next/next/no-img-element
-              <img
-                src={PET_SRC}
-                alt="Mascota"
-                onError={() => setBroken(true)}
-                className="object-contain"
-                style={{
-                  width: W,
-                  height: H,
-                  filter: "drop-shadow(0 3px 4px rgba(0,0,0,0.35))",
-                }}
-                draggable={false}
-              />
+              <div className="relative" style={{ width: W, height: H }}>
+                {/* eslint-disable-next-line @next/next/no-img-element */}
+                <img
+                  src={PET_SRC}
+                  alt="Mascota"
+                  onError={() => setBroken(true)}
+                  className="object-contain"
+                  style={{
+                    width: W,
+                    height: H,
+                    filter: "drop-shadow(0 3px 4px rgba(0,0,0,0.35))",
+                  }}
+                  draggable={false}
+                />
+                {/* Moretones que se acumulan con cada golpe */}
+                {BRUISES.slice(0, hits).map((b, i) => (
+                  <span
+                    key={i}
+                    className="pet-bruise absolute rounded-full"
+                    style={{
+                      left: b.x * W - b.s / 2,
+                      top: b.y * H - b.s / 2,
+                      width: b.s,
+                      height: b.s,
+                      background:
+                        "radial-gradient(circle, rgba(76,29,149,0.9) 0%, rgba(30,64,175,0.6) 45%, rgba(30,64,175,0) 72%)",
+                      filter: "blur(0.7px)",
+                      mixBlendMode: "multiply",
+                    }}
+                  />
+                ))}
+              </div>
             )}
             {/* sombrita */}
             <div
