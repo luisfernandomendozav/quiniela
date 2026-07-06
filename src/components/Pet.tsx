@@ -32,6 +32,13 @@ const BRUISES: { x: number; y: number; s: number }[] = [
 ];
 const MAX_BRUISES = BRUISES.length;
 
+// Hinchazones "3D" que aparecen a cierto número de golpes (deforman la cara).
+const SWELLINGS: { x: number; y: number; s: number; at: number; kind: "eye" | "bump" }[] = [
+  { x: 0.37, y: 0.24, s: 28, at: 2, kind: "eye" }, // ojo morado
+  { x: 0.58, y: 0.15, s: 26, at: 4, kind: "bump" }, // chichón en la frente
+  { x: 0.5, y: 0.35, s: 24, at: 6, kind: "bump" }, // labio/cachete hinchado
+];
+
 // Palabras de impacto estilo cómic
 const IMPACT_WORDS = ["¡ZAS!", "¡POW!", "¡PAF!", "¡PUM!", "¡ZÁS!"];
 
@@ -310,6 +317,21 @@ export default function Pet() {
               </div>
             ) : (
               <div className="relative" style={{ width: W, height: H }}>
+                {/* Filtro de distorsión: deforma más la cara mientras más golpes */}
+                {hits > 0 && (
+                  <svg width="0" height="0" aria-hidden style={{ position: "absolute" }}>
+                    <filter id="pet-warp" x="-25%" y="-25%" width="150%" height="150%">
+                      <feTurbulence type="turbulence" baseFrequency="0.035" numOctaves={2} seed={5} result="t" />
+                      <feDisplacementMap
+                        in="SourceGraphic"
+                        in2="t"
+                        scale={Math.min(hits, MAX_BRUISES) * 3.4}
+                        xChannelSelector="R"
+                        yChannelSelector="G"
+                      />
+                    </filter>
+                  </svg>
+                )}
                 {/* eslint-disable-next-line @next/next/no-img-element */}
                 <img
                   src={PET_SRC}
@@ -319,9 +341,9 @@ export default function Pet() {
                   style={{
                     width: W,
                     height: H,
-                    filter: flash
-                      ? "drop-shadow(0 3px 4px rgba(0,0,0,0.35)) brightness(1.15) sepia(0.7) saturate(6) hue-rotate(-18deg)"
-                      : "drop-shadow(0 3px 4px rgba(0,0,0,0.35))",
+                    filter: `${hits > 0 ? "url(#pet-warp) " : ""}drop-shadow(0 3px 4px rgba(0,0,0,0.35))${
+                      flash ? " brightness(1.15) sepia(0.7) saturate(6) hue-rotate(-18deg)" : ""
+                    }`,
                     transition: "filter .1s",
                   }}
                   draggable={false}
@@ -339,6 +361,24 @@ export default function Pet() {
                       background:
                         "radial-gradient(circle, rgba(124,25,180,0.92) 0%, rgba(76,29,149,0.85) 38%, rgba(37,99,235,0.5) 62%, rgba(37,99,235,0) 78%)",
                       filter: "blur(0.6px)",
+                    }}
+                  />
+                ))}
+                {/* Hinchazones que deforman la cara (ojo morado, chichones) */}
+                {SWELLINGS.filter((s) => hits >= s.at).map((s, i) => (
+                  <span
+                    key={i}
+                    className="pet-bruise absolute rounded-full"
+                    style={{
+                      left: s.x * W - s.s / 2,
+                      top: s.y * H - s.s / 2,
+                      width: s.s,
+                      height: s.s,
+                      background:
+                        s.kind === "eye"
+                          ? "radial-gradient(circle at 40% 35%, rgba(30,10,60,0.95) 0%, rgba(88,28,135,0.9) 45%, rgba(88,28,135,0) 72%)"
+                          : "radial-gradient(circle at 38% 32%, rgba(255,180,180,0.95) 0%, rgba(200,40,60,0.75) 45%, rgba(200,40,60,0) 74%)",
+                      boxShadow: "inset -2px -3px 4px rgba(0,0,0,0.35)",
                     }}
                   />
                 ))}
