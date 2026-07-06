@@ -70,6 +70,51 @@ export default function Pet() {
   const msgTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
   const spawnTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
   const clickTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const audioCtx = useRef<AudioContext | null>(null);
+
+  // Crea/desbloquea el audio dentro del gesto de clic (política de autoplay).
+  function ensureAudio() {
+    if (!audioCtx.current) {
+      const AC = window.AudioContext || (window as unknown as { webkitAudioContext: typeof AudioContext }).webkitAudioContext;
+      if (AC) audioCtx.current = new AC();
+    }
+    if (audioCtx.current?.state === "suspended") audioCtx.current.resume();
+  }
+
+  // Sonido de golpe sintetizado: "thud" grave + "smack" de ruido.
+  function playPunch() {
+    const ctx = audioCtx.current;
+    if (!ctx) return;
+    const now = ctx.currentTime;
+    // golpe grave
+    const osc = ctx.createOscillator();
+    osc.type = "sine";
+    osc.frequency.setValueAtTime(150 + Math.random() * 60, now);
+    osc.frequency.exponentialRampToValueAtTime(45, now + 0.12);
+    const g = ctx.createGain();
+    g.gain.setValueAtTime(0.0001, now);
+    g.gain.exponentialRampToValueAtTime(0.55, now + 0.005);
+    g.gain.exponentialRampToValueAtTime(0.0001, now + 0.18);
+    osc.connect(g).connect(ctx.destination);
+    osc.start(now);
+    osc.stop(now + 0.2);
+    // "smack" de ruido corto
+    const len = Math.floor(ctx.sampleRate * 0.08);
+    const buf = ctx.createBuffer(1, len, ctx.sampleRate);
+    const data = buf.getChannelData(0);
+    for (let i = 0; i < len; i++) data[i] = (Math.random() * 2 - 1) * (1 - i / len);
+    const noise = ctx.createBufferSource();
+    noise.buffer = buf;
+    const lp = ctx.createBiquadFilter();
+    lp.type = "lowpass";
+    lp.frequency.value = 2000;
+    const ng = ctx.createGain();
+    ng.gain.setValueAtTime(0.4, now);
+    ng.gain.exponentialRampToValueAtTime(0.0001, now + 0.09);
+    noise.connect(lp).connect(ng).connect(ctx.destination);
+    noise.start(now);
+    noise.stop(now + 0.09);
+  }
 
   useEffect(() => {
     xRef.current = x;
@@ -179,6 +224,7 @@ export default function Pet() {
   // Cada clic = un golpe: se sacude, destella rojo, sale un "¡ZAS!" y un moretón más.
   const impactId = useRef(0);
   function hitPet() {
+    playPunch();
     setHits((h) => Math.min(h + 1, MAX_BRUISES));
     setShaking(true);
     setTimeout(() => setShaking(false), 400);
@@ -230,6 +276,7 @@ export default function Pet() {
 
   // Distingue 1 clic (frase) de 2 clics (esconderse)
   function handleClick() {
+    ensureAudio(); // desbloquea el audio dentro del gesto
     if (clickTimer.current) {
       clearTimeout(clickTimer.current);
       clickTimer.current = null;
