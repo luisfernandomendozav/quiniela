@@ -21,22 +21,27 @@ const FOODS = ["🍔", "🌮", "🍕", "🌭", "🍟", "🥤", "🍗", "🌯"];
 // Posiciones de los moretones sobre la silueta (fracción de W×H). Van apareciendo
 // uno por uno con cada golpe; se curan solos si lo dejas en paz.
 const BRUISES: { x: number; y: number; s: number }[] = [
-  { x: 0.44, y: 0.20, s: 15 },
-  { x: 0.60, y: 0.26, s: 13 },
-  { x: 0.34, y: 0.32, s: 17 },
-  { x: 0.56, y: 0.42, s: 20 },
-  { x: 0.30, y: 0.52, s: 15 },
-  { x: 0.68, y: 0.47, s: 14 },
-  { x: 0.48, y: 0.63, s: 21 },
-  { x: 0.62, y: 0.14, s: 12 },
+  { x: 0.42, y: 0.16, s: 18 }, // frente
+  { x: 0.56, y: 0.21, s: 16 }, // frente der
+  { x: 0.33, y: 0.27, s: 19 }, // cachete izq
+  { x: 0.6, y: 0.31, s: 16 }, // cachete der
+  { x: 0.5, y: 0.44, s: 24 }, // pecho
+  { x: 0.3, y: 0.54, s: 19 },
+  { x: 0.7, y: 0.49, s: 18 },
+  { x: 0.47, y: 0.63, s: 22 },
 ];
 const MAX_BRUISES = BRUISES.length;
+
+// Palabras de impacto estilo cómic
+const IMPACT_WORDS = ["¡ZAS!", "¡POW!", "¡PAF!", "¡PUM!", "¡ZÁS!"];
 
 export default function Pet() {
   const [x, setX] = useState(40);
   const [dir, setDir] = useState<1 | -1>(1);
   const [shaking, setShaking] = useState(false); // sacudida al pegarle
   const [hits, setHits] = useState(0); // moretones acumulados
+  const [flash, setFlash] = useState(false); // destello rojo de dolor
+  const [impact, setImpact] = useState<{ id: number; word: string } | null>(null); // ¡ZAS!
   const [eating, setEating] = useState(false);
   const [paused, setPaused] = useState(false);
   const [msg, setMsg] = useState<string | null>(null);
@@ -164,11 +169,16 @@ export default function Pet() {
     msgTimer.current = setTimeout(() => setMsg(null), ms);
   }
 
-  // Cada clic = un golpe: se sacude, se queja y le sale un moretón más.
+  // Cada clic = un golpe: se sacude, destella rojo, sale un "¡ZAS!" y un moretón más.
+  const impactId = useRef(0);
   function hitPet() {
     setHits((h) => Math.min(h + 1, MAX_BRUISES));
     setShaking(true);
     setTimeout(() => setShaking(false), 400);
+    setFlash(true);
+    setTimeout(() => setFlash(false), 200);
+    impactId.current += 1;
+    setImpact({ id: impactId.current, word: IMPACT_WORDS[Math.floor(Math.random() * IMPACT_WORDS.length)] });
     say(PAIN_PHRASES[Math.floor(Math.random() * PAIN_PHRASES.length)], 1600);
   }
 
@@ -275,6 +285,13 @@ export default function Pet() {
           </div>
         )}
 
+        {/* ¡ZAS! cómic sobre el pet en cada golpe (fuera del contenedor que se voltea) */}
+        {impact && (
+          <span key={impact.id} className="pet-impact absolute left-1/2 z-10" style={{ top: 6 }}>
+            {impact.word}
+          </span>
+        )}
+
         <button
           type="button"
           onClick={handleClick}
@@ -302,11 +319,14 @@ export default function Pet() {
                   style={{
                     width: W,
                     height: H,
-                    filter: "drop-shadow(0 3px 4px rgba(0,0,0,0.35))",
+                    filter: flash
+                      ? "drop-shadow(0 3px 4px rgba(0,0,0,0.35)) brightness(1.15) sepia(0.7) saturate(6) hue-rotate(-18deg)"
+                      : "drop-shadow(0 3px 4px rgba(0,0,0,0.35))",
+                    transition: "filter .1s",
                   }}
                   draggable={false}
                 />
-                {/* Moretones que se acumulan con cada golpe */}
+                {/* Moretones morados que se acumulan con cada golpe */}
                 {BRUISES.slice(0, hits).map((b, i) => (
                   <span
                     key={i}
@@ -317,9 +337,8 @@ export default function Pet() {
                       width: b.s,
                       height: b.s,
                       background:
-                        "radial-gradient(circle, rgba(76,29,149,0.9) 0%, rgba(30,64,175,0.6) 45%, rgba(30,64,175,0) 72%)",
-                      filter: "blur(0.7px)",
-                      mixBlendMode: "multiply",
+                        "radial-gradient(circle, rgba(124,25,180,0.92) 0%, rgba(76,29,149,0.85) 38%, rgba(37,99,235,0.5) 62%, rgba(37,99,235,0) 78%)",
+                      filter: "blur(0.6px)",
                     }}
                   />
                 ))}

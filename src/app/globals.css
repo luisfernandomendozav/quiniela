@@ -69,3 +69,22 @@ body {
 @keyframes bruisePop { 0% { transform: scale(0); opacity: 0; } 100% { transform: scale(1); opacity: 1; } }
 .pet-hit { animation: petShake 0.4s ease-in-out; }
 .pet-bruise { animation: bruisePop 0.2s ease-out; }
+
+/* Pet: estallido cómico "¡ZAS!" al golpear */
+.pet-impact {
+  font-weight: 900;
+  font-size: 15px;
+  color: #b91c1c;
+  background: #fde047;
+  padding: 7px 9px;
+  transform: translateX(-50%);
+  clip-path: polygon(50% 0%, 61% 20%, 83% 15%, 73% 35%, 100% 40%, 76% 53%, 91% 75%, 63% 66%, 60% 95%, 50% 72%, 40% 95%, 37% 66%, 9% 75%, 24% 53%, 0% 40%, 27% 35%, 17% 15%, 39% 20%);
+  animation: impactPop 0.55s ease-out forwards;
+  pointer-events: none;
+  text-shadow: 0 1px 0 rgba(255,255,255,0.6);
+}
+@keyframes impactPop {
+  0% { transform: translateX(-50%) scale(0) rotate(-25deg); opacity: 0; }
+  35% { transform: translateX(-50%) scale(1.25) rotate(10deg); opacity: 1; }
+  100% { transform: translateX(-50%) translateY(-14px) scale(1) rotate(-6deg); opacity: 0; }
+}
