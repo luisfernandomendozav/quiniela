@@ -110,3 +110,11 @@ body {
   0% { background-position: 150% 0; }
   60%, 100% { background-position: -50% 0; }
 }
+
+/* Pet campeón: corona y copa */
+.pet-crown { animation: petFloat 2.4s ease-in-out infinite; }
+.pet-trophy { animation: trophyWiggle 2.2s ease-in-out infinite; transform-origin: bottom center; }
+@keyframes trophyWiggle {
+  0%, 100% { transform: rotate(-9deg); }
+  50% { transform: rotate(9deg) translateY(-3px); }
+}

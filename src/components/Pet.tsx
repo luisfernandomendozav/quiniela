@@ -429,6 +429,31 @@ export default function Pet() {
                     }}
                   />
                 ))}
+                {/* Coronita de campeón sobre la cabeza 👑 */}
+                <span
+                  className="pet-crown absolute pointer-events-none"
+                  style={{
+                    left: W * 0.36,
+                    top: -8,
+                    transform: "translateX(-50%)",
+                    fontSize: 24,
+                    filter: "drop-shadow(0 2px 2px rgba(0,0,0,0.3))",
+                  }}
+                >
+                  👑
+                </span>
+                {/* La Copa del Mundo, cerca de la mano 🏆 */}
+                <span
+                  className="pet-trophy absolute pointer-events-none"
+                  style={{
+                    left: W * 0.66,
+                    top: H * 0.26,
+                    fontSize: 24,
+                    filter: "drop-shadow(0 2px 2px rgba(0,0,0,0.3))",
+                  }}
+                >
+                  🏆
+                </span>
               </div>
             )}
             {/* sombrita */}
