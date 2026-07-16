@@ -88,3 +88,25 @@ body {
   35% { transform: translateX(-50%) scale(1.25) rotate(10deg); opacity: 1; }
   100% { transform: translateX(-50%) translateY(-14px) scale(1) rotate(-6deg); opacity: 0; }
 }
+
+/* La Gran Final: título dorado con brillo + destello */
+.final-title {
+  background: linear-gradient(90deg, #b45309, #f59e0b, #fde68a, #f59e0b, #b45309);
+  background-size: 200% auto;
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+  animation: goldShine 3s linear infinite;
+}
+@keyframes goldShine {
+  to { background-position: 200% center; }
+}
+.final-shine {
+  background: linear-gradient(115deg, transparent 30%, rgba(255,255,255,0.55) 48%, transparent 66%);
+  background-size: 250% 100%;
+  animation: finalSweep 4.5s ease-in-out infinite;
+}
+@keyframes finalSweep {
+  0% { background-position: 150% 0; }
+  60%, 100% { background-position: -50% 0; }
+}

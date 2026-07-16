@@ -99,10 +99,46 @@ export default function MatchList({
           // En eliminatorias (sin grupo) son muchas selecciones: no apretujamos
           // banderitas en el encabezado; el cuadro completo vive en /bracket.
           const isKnockout = games[0]?.group_name == null;
+          const isFinal = games[0]?.stage === "Final";
           // Equipos del grupo (orden de aparición)
           const teams = Array.from(
             new Set(games.flatMap((m) => [m.home_team, m.away_team]))
           );
+
+          // La Gran Final: sección dorada especial ✨
+          if (isFinal) {
+            return (
+              <section
+                key={section}
+                id="seccion-final"
+                className="final-section relative overflow-hidden rounded-3xl border-2 border-amber-400 bg-gradient-to-b from-amber-50 via-yellow-50 to-amber-100 p-5 shadow-[0_10px_40px_rgba(217,164,6,0.28)]"
+              >
+                <div className="pointer-events-none absolute inset-0 final-shine" />
+                <div className="relative text-center mb-4">
+                  <div className="text-4xl drop-shadow-sm">🏆</div>
+                  <h2 className="final-title text-2xl sm:text-3xl font-black tracking-tight">
+                    LA GRAN FINAL
+                  </h2>
+                  <p className="text-[11px] font-bold uppercase tracking-[0.25em] text-amber-700/80">
+                    Mundial 2026 · Última jornada
+                  </p>
+                </div>
+                <div className="relative space-y-3">
+                  {games.map((m) => (
+                    <MatchCard
+                      key={m.id}
+                      match={m}
+                      activeJornada={activeJornada}
+                      allPreds={revealed[m.id] ?? []}
+                      locked={locked}
+                      isFinal
+                    />
+                  ))}
+                </div>
+              </section>
+            );
+          }
+
           return (
             <section key={section} id={`seccion-${section.toLowerCase().replace(/\s+/g, "-")}`}>
               <div
@@ -174,11 +210,13 @@ function MatchCard({
   activeJornada,
   allPreds,
   locked,
+  isFinal = false,
 }: {
   match: MatchWithPred;
   activeJornada: number;
   allPreds: RevealedPred[];
   locked: boolean;
+  isFinal?: boolean;
 }) {
   const router = useRouter();
   const jornadaOpen = match.jornada === activeJornada;
@@ -210,8 +248,10 @@ function MatchCard({
 
   return (
     <div
-      className={`bg-white rounded-xl border shadow-sm p-4 ${
-        mexicoMatch ? "border-brand/40 ring-1 ring-brand/20" : ""
+      className={`rounded-xl border shadow-sm p-4 ${
+        isFinal
+          ? "bg-gradient-to-b from-white to-amber-50 border-amber-300 ring-2 ring-amber-300/60"
+          : `bg-white ${mexicoMatch ? "border-brand/40 ring-1 ring-brand/20" : ""}`
       }`}
     >
       <div className="flex items-start justify-between gap-2 text-xs text-gray-400 mb-3">
